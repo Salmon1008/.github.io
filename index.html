@@ -483,23 +483,38 @@ body.is-saving .controls {
 @media (max-width: 768px) {
   :root {
     --gap-item: 1px;
-    --gap-block: 2px;
+    --gap-block: 1px;
+
+    /*
+      スマホ下部の操作欄に必要な高さだけを予約する。
+      以前の広告用の大きな上下余白は使わない。
+    */
+    --mobile-controls-reserve: 35px;
   }
 
   /*
-    下部ボタンと重ならない分だけ余白を確保する。
-    内容自体は縦スクロールさせず、画面内へ自動縮小する。
+    上下左右の余白を最小限まで縮める。
+    下側は操作ボタン＋iPhoneのセーフエリア分だけ確保し、
+    残った高さを画像の自動拡大へ回す。
   */
   #capture {
-    padding: 4px 4px 48px;
+    padding:
+      1px
+      2px
+      calc(
+        var(--mobile-controls-reserve)
+        + env(safe-area-inset-bottom)
+      );
+
     overflow: hidden;
 
     align-items: center;
     justify-content: center;
   }
 
+  /* PNG保存時は操作ボタンが消えるため、下部予約もなくす。 */
   body.is-saving #capture {
-    padding-bottom: 4px;
+    padding: 1px 2px;
   }
 
   body.is-variant-view #collection-content {
@@ -510,7 +525,7 @@ body.is-saving .controls {
   }
 
   #header-area {
-    margin-bottom: 2px;
+    margin-bottom: 0;
   }
 
   #counter {
@@ -525,7 +540,7 @@ body.is-saving .controls {
     align-items: center;
     justify-content: center;
 
-    gap: 2px;
+    gap: 1px;
   }
 
   body.is-variant-view .variant-view-row {
@@ -539,13 +554,13 @@ body.is-saving .controls {
     flex-direction: column;
     align-items: center;
 
-    gap: 2px;
+    gap: 1px;
   }
 
   /* SPECIALは5枚を横1列にする。 */
   .mobile-variant-special {
     display: block;
-    padding: 1px;
+    padding: 0;
   }
 
   /*
@@ -566,7 +581,7 @@ body.is-saving .controls {
     flex-direction: column;
     align-items: flex-start;
 
-    gap: 1px;
+    gap: 0;
   }
 
   /*
@@ -579,7 +594,7 @@ body.is-saving .controls {
     align-items: flex-start;
 
     gap: 1px;
-    padding: 1px;
+    padding: 0;
   }
 
   .mobile-compact-variant-control {
@@ -620,12 +635,12 @@ body.is-saving .controls {
 
     top: auto;
     right: auto;
-    bottom: max(4px, env(safe-area-inset-bottom));
+    bottom: max(1px, env(safe-area-inset-bottom));
     left: 50%;
 
-    gap: 5px;
+    gap: 3px;
     margin: 0;
-    padding: 4px;
+    padding: 2px;
 
     background: rgba(255, 255, 255, 0.9);
 
@@ -639,11 +654,11 @@ body.is-saving .controls {
 
   button {
     min-width: 0;
-    height: 32px;
+    height: 28px;
 
-    padding: 0 9px;
+    padding: 0 7px;
 
-    font-size: 12px;
+    font-size: 11px;
 
     border-radius: 5px;
     box-shadow: none;
