@@ -436,8 +436,13 @@ body.show-values .value {
 
 button {
   min-width: 70px;
+  height: 46px;
 
-  padding: 10px 20px;
+  padding: 0 20px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 
   border: 1px solid #cccccc;
   border-radius: 8px;
@@ -634,8 +639,9 @@ body.is-saving .controls {
 
   button {
     min-width: 0;
+    height: 32px;
 
-    padding: 6px 9px;
+    padding: 0 9px;
 
     font-size: 12px;
 
@@ -1410,7 +1416,7 @@ function createCollectionItem(
 
   image.src =
     variant === null
-      ? `images/${type}.webp`
+      ? `images/special/${type}.webp`
       : `images/${variant}/${type}_${variant}.webp`;
 
   image.alt =
