@@ -712,11 +712,16 @@ body.is-saving .controls {
 
   読み込まれる画像名：
 
-  images/sample_normal.webp
-  images/sample_gold.webp
-  images/sample_holofoil.webp
-  images/sample_cube.webp
-  images/sample_quack.webp
+  images/normal/sample_normal.webp
+  images/gold/sample_gold.webp
+  images/holofoil/sample_holofoil.webp
+  images/cube/sample_cube.webp
+  images/quack/sample_quack.webp
+
+  バリアントを持たない単独画像は従来どおり：
+
+  images/peanut.webp
+  images/vini.webp
 */
 
 /* =========================
@@ -1406,7 +1411,7 @@ function createCollectionItem(
   image.src =
     variant === null
       ? `images/${type}.webp`
-      : `images/${type}_${variant}.webp`;
+      : `images/${variant}/${type}_${variant}.webp`;
 
   image.alt =
     variant === null
