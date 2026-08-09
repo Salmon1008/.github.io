@@ -585,31 +585,76 @@ body.is-saving .controls {
   }
 
   /*
-    holofoil・cube・gem・quackは、
-    各段を折り返さず横1列で表示する。
+    holofoil・cube・gem・quackも最大10列で折り返す。
+    横幅を10枚分に抑え、余った縦方向を利用して画像を大きくする。
   */
 
   .mobile-compact-variant-group {
-    display: flex;
-    align-items: flex-start;
+    width: max-content;
 
-    gap: 1px;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+
+    gap: 0;
     padding: 0;
   }
 
-  .mobile-compact-variant-control {
-    flex: 0 0 16px;
-
-    width: 16px;
-    height: var(--item-size);
+  /*
+    スマホではバリアント名と一括チェックを画像の上へ置く。
+    画像の左右には何も置かないため、画面幅をすべて画像へ使える。
+  */
+  .mobile-compact-variant-header {
+    width: 100%;
+    height: 13px;
 
     display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 3px;
+    padding: 0 1px;
+  }
+
+  .mobile-compact-variant-label {
+    padding: 1px 4px;
+
+    color: #ffffff;
+    background: rgba(0, 0, 0, 0.78);
+
+    border: 1px solid rgba(255, 255, 255, 0.9);
+    border-radius: 3px;
+
+    font-family: "Impact", "Arial Black", sans-serif;
+    font-size: 9px;
+    line-height: 1;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.9);
+    -webkit-text-stroke: 0.35px #000000;
+
+    pointer-events: none;
+  }
+
+  .mobile-compact-variant-control {
+    width: auto;
+    height: 13px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .mobile-compact-variant-control
   .variant-view-bulk-checkbox {
-    width: 14px;
-    height: 14px;
+    width: 12px;
+    height: 12px;
+
+    accent-color: #ff5a5a;
+
+    background: rgba(255, 255, 255, 0.92);
+    border-radius: 2px;
   }
 
   .variant-view-bulk-checkbox {
@@ -1974,6 +2019,16 @@ function renderMobileVariantView() {
         "div"
       );
 
+    const header =
+      document.createElement(
+        "div"
+      );
+
+    const label =
+      document.createElement(
+        "div"
+      );
+
     const control =
       document.createElement(
         "div"
@@ -1986,6 +2041,15 @@ function renderMobileVariantView() {
 
     group.className =
       "mobile-compact-variant-group";
+
+    header.className =
+      "mobile-compact-variant-header";
+
+    label.className =
+      "mobile-compact-variant-label";
+
+    label.textContent =
+      variant;
 
     control.className =
       "mobile-compact-variant-control";
@@ -2027,6 +2091,11 @@ function renderMobileVariantView() {
       )
     );
 
+    header.append(
+      label,
+      control
+    );
+
     for (const type of matchingTypes) {
       items.appendChild(
         createCollectionItem(
@@ -2037,7 +2106,7 @@ function renderMobileVariantView() {
     }
 
     group.append(
-      control,
+      header,
       items
     );
 
@@ -2091,7 +2160,8 @@ function renderMobileVariantView() {
 
   /*
     下側：holofoil・cube・gem・quack。
-    各バリアントを独立した横1列にして、途中で改行しない。
+    各バリアントを独立させ、スマホでは最大10列で折り返す。
+    11枚あるholofoilが横幅を広げないため、画像を大きくできる。
   */
   const secondaryArea =
     document.createElement(
@@ -2122,7 +2192,7 @@ function renderMobileVariantView() {
       createCompactVariantGroup(
         variant,
         matchingTypes,
-        matchingTypes.length,
+        10,
         false
       )
     );
