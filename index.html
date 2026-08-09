@@ -1112,86 +1112,54 @@ const COLLECTION_ROWS = [
 ========================= */
 const STANDALONE_ITEMS = [
   {
-    type: "peanut",
-    value: 6750
+    type: "peanut"
   },
 
   {
-    type: "vini",
-    value: 6750
+    type: "vini"
   },
 
   {
-    type: "pollo",
-    value: 6750
+    type: "pollo"
   },
 
   {
-    type: "john",
-    value: 6750
+    type: "john"
   },
 
   {
-    type: "ironmouse",
-    value: 6750
+    type: "ironmouse"
   }
 ];
 
 /* =========================
    消費ダスト
 
-   すべてのバリアントを同じ方法で管理する。
-   normal・gold・gummy・galaxy・holofoil・
-   cube・gem・quackのどれにも特別な分岐はない。
+   各レアリティはnormalと、それ以外の2種類だけで管理する。
+   gold・gummy・galaxy・holofoil・cube・gem・quackは
+   すべてotherの値を使用する。
 
-   holofoilはgold・gummy・galaxyと同額。
-
-   新しいバリアントを追加した場合は、
-   各レアリティへ同じバリアント名を追加する。
+   SPECIALはすべてmythic扱いとし、mythic.normalを使用する。
 ========================= */
 const DUST_VALUES = {
   rare: {
     normal: 100,
-    gold: 2700,
-    gummy: 2700,
-    galaxy: 2700,
-    holofoil: 2700,
-    cube: 2700,
-    gem: 2700,
-    quack: 2700
+    other: 2700
   },
 
   epic: {
     normal: 2700,
-    gold: 4000,
-    gummy: 4000,
-    galaxy: 4000,
-    holofoil: 4000,
-    cube: 4000,
-    gem: 4000,
-    quack: 4000
+    other: 4000
   },
 
   legendary: {
     normal: 4500,
-    gold: 6750,
-    gummy: 6750,
-    galaxy: 6750,
-    holofoil: 6750,
-    cube: 6750,
-    gem: 6750,
-    quack: 6750
+    other: 6750
   },
 
   mythic: {
     normal: 6750,
-    gold: 10000,
-    gummy: 10000,
-    galaxy: 10000,
-    holofoil: 10000,
-    cube: 10000,
-    gem: 10000,
-    quack: 10000
+    other: 10000
   }
 };
 
@@ -1225,21 +1193,6 @@ const RARITY_MAP =
             ];
           }
         );
-      }
-    )
-  );
-
-const STANDALONE_VALUE_MAP =
-  Object.fromEntries(
-    STANDALONE_ITEMS.map(
-      ({
-        type,
-        value
-      }) => {
-        return [
-          type,
-          value
-        ];
       }
     )
   );
@@ -1338,25 +1291,23 @@ function getValue(
   type,
   variant
 ) {
+  /* SPECIALはすべてmythicのnormal価格を使用する。 */
   if (variant === null) {
-    return (
-      STANDALONE_VALUE_MAP[type]
-      ?? 0
-    );
+    return DUST_VALUES.mythic.normal;
   }
 
   const rarity =
     RARITY_MAP[type]
     ?? "legendary";
 
-  const value =
-    DUST_VALUES[rarity]?.[variant];
+  const priceType =
+    variant === "normal"
+      ? "normal"
+      : "other";
 
-  /*
-    バリアントを画像設定へ追加したのに、
-    DUST_VALUESへ追加し忘れた場合は
-    コンソールへ分かりやすく表示する。
-  */
+  const value =
+    DUST_VALUES[rarity]?.[priceType];
+
   if (value === undefined) {
     console.warn(
       `消費ダスト未設定: rarity=${rarity}, type=${type}, variant=${variant}`
