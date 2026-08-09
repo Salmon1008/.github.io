@@ -2640,79 +2640,347 @@ function cropControlSpace(
 }
 
 /* =========================
-   PNG保存
+   スマホ保存補助
 ========================= */
-async function savePNG() {
-  await waitForImages(
-    capture
+function isIOSLikeDevice() {
+  return (
+    /iPad|iPhone|iPod/.test(
+      navigator.userAgent
+    )
+    || (
+      navigator.platform === "MacIntel"
+      && navigator.maxTouchPoints > 1
+    )
   );
+}
 
-  let fullCanvas;
+function canvasToPNGBlob(
+  canvas
+) {
+  return new Promise(
+    (
+      resolve,
+      reject
+    ) => {
+      canvas.toBlob(
+        blob => {
+          if (blob) {
+            resolve(blob);
 
-  /*
-    TOTAL横の操作ボタンを保存画像へ入れない。
-    非表示にした状態でもう一度最大サイズを計算する。
-  */
-  document.body.classList.add(
-    "is-saving"
-  );
-
-  try {
-    applyAutoLayout();
-
-    await new Promise(
-      resolve => {
-        requestAnimationFrame(
-          () => {
-            requestAnimationFrame(
-              resolve
-            );
+            return;
           }
-        );
-      }
-    );
 
-    fullCanvas =
-      await html2canvas(
-        capture,
-        {
-          useCORS: true,
-          backgroundColor: null,
-          scale: 2,
-          logging: false
-        }
+          reject(
+            new Error(
+              "PNG画像を作成できませんでした。"
+            )
+          );
+        },
+        "image/png"
       );
-  } finally {
-    document.body.classList.remove(
-      "is-saving"
-    );
+    }
+  );
+}
 
-    scheduleAutoLayout();
-  }
-
-  if (!fullCanvas) {
-    return;
-  }
-
-  const saveCanvas =
-    cropControlSpace(
-      fullCanvas
-    );
+function downloadPNGBlob(
+  blob,
+  fileName
+) {
+  const objectURL =
+    URL.createObjectURL(blob);
 
   const link =
     document.createElement(
       "a"
     );
 
-  link.download =
-    "collection_variant_view.png";
+  link.href = objectURL;
+  link.download = fileName;
+  link.rel = "noopener";
 
-  link.href =
-    saveCanvas.toDataURL(
-      "image/png"
+  /*
+    スマホブラウザではDOMへ追加していないa要素の
+    click()が無視されることがあるため、一度bodyへ置く。
+  */
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+
+  /*
+    click直後にURLを破棄すると、端末によっては
+    ダウンロード開始前に画像を読めなくなるため少し待つ。
+  */
+  window.setTimeout(
+    () => {
+      URL.revokeObjectURL(
+        objectURL
+      );
+    },
+    60000
+  );
+}
+
+function showIOSSavePreview(
+  blob,
+  previewWindow
+) {
+  const objectURL =
+    URL.createObjectURL(blob);
+
+  /*
+    iPhone・iPadではdownload属性が無視される場合がある。
+    ボタンを押した瞬間に開いておいたタブへ完成画像を表示し、
+    長押しまたは共有メニューから保存できるようにする。
+  */
+  if (
+    previewWindow
+    && !previewWindow.closed
+  ) {
+    previewWindow.document.open();
+    previewWindow.document.write(
+      `<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>コレクション画像</title>
+<style>
+html, body {
+  margin: 0;
+  min-height: 100%;
+  background: #111111;
+  color: #ffffff;
+  font-family: sans-serif;
+}
+body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+}
+p {
+  margin: 0;
+  font-size: 14px;
+  text-align: center;
+}
+img {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  -webkit-touch-callout: default;
+}
+</style>
+</head>
+<body>
+<p>画像を長押しして「写真に保存」を選んでください。</p>
+<img id="collection-save-image" alt="保存用コレクション画像">
+</body>
+</html>`
+    );
+    previewWindow.document.close();
+
+    const previewImage =
+      previewWindow.document
+        .getElementById(
+          "collection-save-image"
+        );
+
+    if (previewImage) {
+      previewImage.src = objectURL;
+    } else {
+      previewWindow.location.href =
+        objectURL;
+    }
+  } else {
+    /*
+      ポップアップが禁止されていた場合の最終手段。
+      同じタブへ画像を開くが、チェック状態はlocalStorageに残る。
+    */
+    window.location.href = objectURL;
+  }
+
+  window.setTimeout(
+    () => {
+      URL.revokeObjectURL(
+        objectURL
+      );
+    },
+    60000
+  );
+}
+
+/* =========================
+   PNG保存
+========================= */
+let savingPNG = false;
+
+async function savePNG() {
+  if (savingPNG) {
+    return;
+  }
+
+  savingPNG = true;
+
+  const originalButtonText =
+    saveButton.textContent;
+
+  const useIOSPreview =
+    isIOSLikeDevice();
+
+  /*
+    iOSでは非同期処理完了後のwindow.openがブロックされる。
+    そのため、ユーザーがPNGボタンを押した直後に空タブを開く。
+  */
+  const previewWindow =
+    useIOSPreview
+      ? window.open(
+          "",
+          "_blank"
+        )
+      : null;
+
+  if (previewWindow) {
+    previewWindow.document.open();
+    previewWindow.document.write(
+      `<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>画像作成中</title>
+<style>
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  background: #111111;
+  color: #ffffff;
+  font-family: sans-serif;
+}
+</style>
+</head>
+<body>画像を作成しています…</body>
+</html>`
+    );
+    previewWindow.document.close();
+  }
+
+  saveButton.disabled = true;
+  saveButton.textContent =
+    "作成中";
+
+  try {
+    await waitForImages(
+      capture
     );
 
-  link.click();
+    let fullCanvas;
+
+    /*
+      TOTAL横の操作ボタンを保存画像へ入れない。
+      非表示にした状態でもう一度最大サイズを計算する。
+    */
+    document.body.classList.add(
+      "is-saving"
+    );
+
+    try {
+      applyAutoLayout();
+
+      await new Promise(
+        resolve => {
+          requestAnimationFrame(
+            () => {
+              requestAnimationFrame(
+                resolve
+              );
+            }
+          );
+        }
+      );
+
+      fullCanvas =
+        await html2canvas(
+          capture,
+          {
+            useCORS: true,
+            backgroundColor: null,
+
+            /*
+              高解像度端末でscale: 2固定にすると、
+              巨大Canvasになってスマホのメモリ上限を超えやすい。
+              端末倍率を上限2として使用する。
+            */
+            scale: Math.min(
+              2,
+              Math.max(
+                1,
+                window.devicePixelRatio
+                || 1
+              )
+            ),
+
+            logging: false
+          }
+        );
+    } finally {
+      document.body.classList.remove(
+        "is-saving"
+      );
+
+      scheduleAutoLayout();
+    }
+
+    if (!fullCanvas) {
+      throw new Error(
+        "保存画像を作成できませんでした。"
+      );
+    }
+
+    const saveCanvas =
+      cropControlSpace(
+        fullCanvas
+      );
+
+    const pngBlob =
+      await canvasToPNGBlob(
+        saveCanvas
+      );
+
+    if (useIOSPreview) {
+      showIOSSavePreview(
+        pngBlob,
+        previewWindow
+      );
+    } else {
+      downloadPNGBlob(
+        pngBlob,
+        "collection_variant_view.png"
+      );
+    }
+  } catch (error) {
+    console.error(error);
+
+    if (
+      previewWindow
+      && !previewWindow.closed
+    ) {
+      previewWindow.close();
+    }
+
+    alert(
+      "画像を保存できませんでした。ページを再読み込みして、もう一度お試しください。"
+    );
+  } finally {
+    saveButton.disabled = false;
+    saveButton.textContent =
+      originalButtonText;
+
+    savingPNG = false;
+  }
 }
 
 /* =========================
