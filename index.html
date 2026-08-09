@@ -1,0 +1,2758 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>コレクション</title>
+
+<script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+
+<style>
+:root {
+  /*
+    JavaScriptが画面内に収まる最大サイズを計算し、
+    --item-sizeを自動更新する。
+  */
+  --item-size: 48px;
+
+  /*
+    PC版は余白を詰め、画像へ使える面積を増やす。
+    画像同士は重ならず、最低限の間隔だけ残す。
+  */
+  --gap-item: 2px;
+  --gap-block: 5px;
+  --variant-bulk-column-width: 22px;
+
+  /* バリアント名を置く左側の専用列幅 */
+  --variant-label-column-width: 66px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  height: 100dvh;
+  overflow: hidden;
+
+  display: flex;
+  flex-direction: column;
+
+  position: relative;
+
+  text-align: center;
+  background: #ffffff;
+}
+
+/* =========================
+   キャプチャ領域
+========================= */
+#capture {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+
+  padding: 6px;
+  overflow: hidden;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background-image: linear-gradient(
+    148deg,
+    rgba(255, 93, 4, 1),
+    rgba(255, 255, 236, 1) 18% 81%,
+    rgba(77, 84, 224, 1)
+  );
+}
+
+#collection-content {
+  flex: 0 0 auto;
+
+  display: flex;
+  flex-direction: column;
+
+  align-items: center;
+  justify-content: center;
+}
+
+/* =========================
+   ヘッダー
+========================= */
+#header-area {
+  width: 100%;
+  margin-bottom: 5px;
+
+  position: relative;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  gap: 8px;
+}
+
+.header-spacer {
+  width: var(--item-size);
+  height: var(--item-size);
+
+  flex-shrink: 0;
+
+  visibility: hidden;
+}
+
+#counter {
+  color: #ffffff;
+
+  font-family: "Impact", "Arial Black", sans-serif;
+  font-size: 26px;
+
+  letter-spacing: 2px;
+
+  -webkit-text-stroke: 1.5px #000000;
+}
+
+/* =========================
+   ギャラリー
+========================= */
+#gallery {
+  display: flex;
+  flex-direction: column;
+
+  align-items: center;
+  justify-content: center;
+
+  gap: var(--gap-block);
+}
+
+.rarity-row {
+  align-items: start;
+
+  gap: var(--gap-block);
+}
+
+
+/* =========================
+   バリアントごとの表示
+
+   1つの枠が1つのバリアントに対応し、
+   枠内の画像は横1行に並ぶ。
+========================= */
+.variant-view-row {
+  flex: 0 0 auto;
+
+  display: flex;
+  align-items: center;
+
+  /*
+    左にバリアント名専用列、右に画像グリッドを置く。
+    ラベルは画像へ重ならず、行の高さも画像1枚分のまま。
+  */
+  gap: 3px;
+  padding: 2px 3px;
+
+  background: rgba(255, 255, 255, 0.25);
+
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  border-radius: 6px;
+
+  box-shadow: 0 3px 5px rgba(0, 0, 0, 0.08);
+}
+
+.variant-view-header {
+  flex: 0 0 var(--variant-label-column-width);
+
+  width: var(--variant-label-column-width);
+  height: var(--item-size);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  pointer-events: none;
+}
+
+.variant-view-label {
+  width: 100%;
+  max-width: 100%;
+
+  padding: 3px 3px 4px;
+
+  color: #ffffff;
+  background: rgba(0, 0, 0, 0.78);
+
+  border: 1px solid rgba(255, 255, 255, 0.92);
+  border-radius: 4px;
+
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: clip;
+
+  font-family: "Impact", "Arial Black", sans-serif;
+  font-size: clamp(10px, calc(var(--item-size) * 0.2), 14px);
+  line-height: 1;
+  letter-spacing: 0.4px;
+  text-align: center;
+  text-transform: uppercase;
+
+  text-shadow:
+    0 1px 2px rgba(0, 0, 0, 1),
+    0 0 3px rgba(0, 0, 0, 0.9);
+
+  -webkit-text-stroke: 0.7px #000000;
+}
+
+/*
+  各バリアント行の右端に置く一括チェック欄。
+
+  type用の画像列の後ろへ専用の細い列を1つ追加する。
+  既存の画像列の順番や間隔は変更しない。
+*/
+.variant-view-bulk-cell {
+  width: var(--variant-bulk-column-width);
+  height: var(--item-size);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.variant-view-bulk-checkbox {
+  width: clamp(13px, calc(var(--item-size) * 0.28), 19px);
+  height: clamp(13px, calc(var(--item-size) * 0.28), 19px);
+
+  margin: 0;
+  cursor: pointer;
+}
+
+.variant-view-items {
+  display: grid;
+
+  /*
+    全バリアント行で同じtype列数を使用する。
+    画像が存在しないtypeには透明な空マスを置くため、
+    同じtypeの画像が必ず同じ縦列に揃う。
+  */
+  grid-template-columns:
+    repeat(
+      var(--variant-view-column-count),
+      var(--item-size)
+    )
+    var(--variant-bulk-column-width);
+
+  grid-template-rows: var(--item-size);
+
+  gap: var(--gap-item);
+}
+
+/*
+  special行はバリアントではないため、
+  右端の一括チェック列を作らない。
+*/
+.variant-view-items.no-bulk-checkbox {
+  grid-template-columns: repeat(
+    var(--variant-view-column-count),
+    var(--item-size)
+  );
+}
+
+.variant-view-placeholder {
+  width: var(--item-size);
+  height: var(--item-size);
+
+  visibility: hidden;
+  pointer-events: none;
+}
+
+
+
+/* =========================
+   スマホ専用バリアント配置
+
+   ・SPECIALは横1列
+   ・normal～galaxyはバリアントごとに独立した段
+   ・同じバリアントの途中でのみ改行する
+   ・holofoil・cube・gem・quackは
+     バリアントごとに横1列で表示する
+========================= */
+.mobile-variant-layout,
+.mobile-primary-variants,
+.mobile-secondary-variants,
+.mobile-compact-variant-group,
+.mobile-variant-special {
+  display: none;
+}
+
+.mobile-compact-variant-control {
+  min-width: 0;
+
+  align-items: center;
+  justify-content: center;
+}
+
+.mobile-variant-special,
+.mobile-compact-variant-group {
+  background: rgba(255, 255, 255, 0.25);
+
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  border-radius: 4px;
+}
+
+.mobile-variant-special-items {
+  display: grid;
+  grid-template-columns: repeat(5, var(--item-size));
+
+  gap: var(--gap-item);
+}
+
+.mobile-compact-variant-items {
+  display: grid;
+  grid-template-columns: repeat(
+    var(--mobile-secondary-column-count, 7),
+    var(--item-size)
+  );
+
+  gap: var(--gap-item);
+}
+
+/*
+  normal～galaxyは最大10枚で改行する。
+  1つのグリッドには1種類のバリアントしか入らない。
+*/
+.mobile-primary-variant-items {
+  grid-template-columns: repeat(
+    var(--mobile-primary-column-count, 10),
+    var(--item-size)
+  );
+}
+
+/* =========================
+   アイテム
+========================= */
+.item {
+  position: relative;
+
+  width: var(--item-size);
+  height: var(--item-size);
+
+  flex-shrink: 0;
+
+  cursor: pointer;
+}
+
+.collection-image {
+  position: relative;
+  z-index: 1;
+
+  display: block;
+
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+}
+
+/* =========================
+   チェックマーク
+========================= */
+.check-canvas {
+  display: none;
+
+  position: absolute;
+  z-index: 2;
+
+  left: 25%;
+  top: 55%;
+
+  width: 50%;
+  height: 50%;
+
+  pointer-events: none;
+}
+
+.item.checked .check-canvas {
+  display: block;
+}
+
+/* =========================
+   消費ダスト
+========================= */
+.value {
+  display: none;
+
+  position: absolute;
+  z-index: 3;
+
+  right: 4px;
+  bottom: 4px;
+
+  padding: 2px 4px;
+
+  border-radius: 4px;
+
+  background: rgba(255, 255, 255, 0.85);
+
+  font-family: "Impact", "Arial Black", sans-serif;
+  font-size: clamp(8px, 1vw, 14px);
+
+  pointer-events: none;
+}
+
+body.show-values .value {
+  display: block;
+}
+
+/* =========================
+   ボタン
+
+   TOTALはヘッダーの完全な中央へ固定する。
+   ボタンは通常レイアウトから外して右端へ置くため、
+   ボタン幅によってTOTALの位置は一切ずれない。
+========================= */
+.controls {
+  z-index: 10;
+
+  position: absolute;
+  top: 50%;
+  right: 0;
+
+  display: flex;
+  align-items: center;
+  flex-wrap: nowrap;
+
+  gap: 15px;
+  margin: 0;
+
+  transform: translateY(-50%);
+}
+
+button {
+  min-width: 70px;
+
+  padding: 10px 20px;
+
+  border: 1px solid #cccccc;
+  border-radius: 8px;
+
+  background: #ffddff;
+
+  font-size: 18px;
+  font-weight: bold;
+  line-height: normal;
+
+  white-space: nowrap;
+
+  cursor: pointer;
+
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/*
+  PNG保存中だけ操作ボタンを非表示にする。
+  ボタンは保存画像へ写らない。
+*/
+body.is-saving .controls {
+  display: none;
+}
+
+/* =========================
+   PC版
+========================= */
+@media (min-width: 769px) {
+  #capture {
+    padding-right: 6px;
+  }
+}
+
+/* =========================
+   スマホ版
+========================= */
+@media (max-width: 768px) {
+  :root {
+    --gap-item: 1px;
+    --gap-block: 2px;
+  }
+
+  /*
+    下部ボタンと重ならない分だけ余白を確保する。
+    内容自体は縦スクロールさせず、画面内へ自動縮小する。
+  */
+  #capture {
+    padding: 4px 4px 48px;
+    overflow: hidden;
+
+    align-items: center;
+    justify-content: center;
+  }
+
+  body.is-saving #capture {
+    padding-bottom: 4px;
+  }
+
+  body.is-variant-view #collection-content {
+    width: auto;
+    min-width: 0;
+
+    justify-content: center;
+  }
+
+  #header-area {
+    margin-bottom: 2px;
+  }
+
+  #counter {
+    font-size: 17px;
+
+    -webkit-text-stroke: 1px #000000;
+  }
+
+  body.is-variant-view #gallery {
+    width: auto;
+
+    align-items: center;
+    justify-content: center;
+
+    gap: 2px;
+  }
+
+  body.is-variant-view .variant-view-row {
+    display: none;
+  }
+
+  .mobile-variant-layout {
+    width: max-content;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    gap: 2px;
+  }
+
+  /* SPECIALは5枚を横1列にする。 */
+  .mobile-variant-special {
+    display: block;
+    padding: 1px;
+  }
+
+  /*
+    normal～galaxyをバリアントごとの段にする。
+
+    normalだけの段
+    goldだけの段
+    gummyだけの段
+    galaxyだけの段
+
+    横幅を超えた場合も、同じバリアントの中で改行する。
+  */
+  .mobile-primary-variants,
+  .mobile-secondary-variants {
+    width: max-content;
+
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+
+    gap: 1px;
+  }
+
+  /*
+    holofoil・cube・gem・quackは、
+    各段を折り返さず横1列で表示する。
+  */
+
+  .mobile-compact-variant-group {
+    display: flex;
+    align-items: flex-start;
+
+    gap: 1px;
+    padding: 1px;
+  }
+
+  .mobile-compact-variant-control {
+    flex: 0 0 16px;
+
+    width: 16px;
+    height: var(--item-size);
+
+    display: flex;
+  }
+
+  .mobile-compact-variant-control
+  .variant-view-bulk-checkbox {
+    width: 14px;
+    height: 14px;
+  }
+
+  .variant-view-bulk-checkbox {
+    margin: 0;
+  }
+
+  .value {
+    top: 1px;
+    right: 1px;
+    bottom: auto;
+
+    padding: 1px;
+
+    font-size: 6px;
+  }
+
+  /*
+    スマホの操作ボタンは画面下部中央へ固定する。
+    TOTALの中央位置には影響しない。
+  */
+  .controls {
+    position: fixed;
+
+    top: auto;
+    right: auto;
+    bottom: max(4px, env(safe-area-inset-bottom));
+    left: 50%;
+
+    gap: 5px;
+    margin: 0;
+    padding: 4px;
+
+    background: rgba(255, 255, 255, 0.9);
+
+    border: 1px solid rgba(0, 0, 0, 0.16);
+    border-radius: 7px;
+
+    transform: translateX(-50%);
+
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  }
+
+  button {
+    min-width: 0;
+
+    padding: 6px 9px;
+
+    font-size: 12px;
+
+    border-radius: 5px;
+    box-shadow: none;
+  }
+}
+
+</style>
+</head>
+
+<body>
+
+<div id="capture">
+  <div id="collection-content">
+
+    <div id="header-area">
+      <div id="counter">
+        TOTAL:
+        <span id="current-count">0</span>
+        /
+        <span id="total-count">0</span>
+      </div>
+
+      <div class="controls">
+
+        <button
+          id="btn-toggle-val"
+          type="button"
+        >
+          ダスト表示
+        </button>
+
+        <button
+          id="btn-save"
+          type="button"
+        >
+          PNG
+        </button>
+      </div>
+    </div>
+
+    <div id="gallery"></div>
+
+  </div>
+</div>
+
+<script>
+/*
+  ========================================
+  画像とバリアントの追加方法
+  ========================================
+
+  各typeには、表示したいバリアントを
+  variantsへ表示順どおりにすべて書く。
+
+  例：
+
+  {
+    type: "sample",
+    variants: [
+      "normal",
+      "gold",
+      "gummy",
+      "galaxy",
+      "holofoil",
+      "cube",
+      "quack"
+    ]
+  }
+
+  holofoil・cube・gem・quackを含め、
+  すべて同じバリアントとして扱う。
+
+  読み込まれる画像名：
+
+  images/sample_normal.webp
+  images/sample_gold.webp
+  images/sample_holofoil.webp
+  images/sample_cube.webp
+  images/sample_quack.webp
+*/
+
+/* =========================
+   バリアント表示時の行順
+
+   ここにない新しいバリアントは、
+   データ内で最初に見つかった順で末尾へ追加される。
+========================= */
+const VARIANT_DISPLAY_ORDER = [
+  "normal",
+  "gold",
+  "gummy",
+  "galaxy",
+  "holofoil",
+  "cube",
+  "gem",
+  "quack"
+];
+
+/* =========================
+   スマホ版の配置区分
+========================= */
+const MOBILE_PRIMARY_VARIANTS = [
+  "normal",
+  "gold",
+  "gummy",
+  "galaxy"
+];
+
+const MOBILE_SECONDARY_VARIANTS = [
+  "holofoil",
+  "cube",
+  "gem",
+  "quack"
+];
+
+/* =========================
+   コレクション設定
+========================= */
+const COLLECTION_ROWS = [
+  {
+    rarity: "rare",
+
+    types: [
+      {
+        type: "water",
+
+        variants: [
+          "normal",
+          "gold",
+          "gummy",
+          "galaxy",
+          "holofoil",
+          "quack",
+          "gem"
+        ]
+      },
+
+      {
+        type: "fire",
+
+        variants: [
+          "normal",
+          "gold",
+          "gummy",
+          "galaxy",
+          "holofoil",
+          "cube",
+          "quack"
+        ]
+      },
+
+      {
+        type: "earth",
+
+        variants: [
+          "normal",
+          "gold",
+          "gummy",
+          "galaxy",
+          "cube",
+          "quack",
+          "gem"
+        ]
+      },
+
+      {
+        type: "air",
+
+        variants: [
+          "normal",
+          "gold",
+          "gummy",
+          "galaxy",
+          "holofoil"
+        ]
+      },
+
+      {
+        type: "fish",
+
+        variants: [
+          "normal",
+          "gold",
+          "gummy",
+          "galaxy",
+          "cube"
+        ]
+      }
+    ]
+  },
+
+  {
+    rarity: "epic",
+
+    types: [
+      {
+        type: "ghost",
+
+        variants: [
+          "normal",
+          "gold",
+          "gummy",
+          "galaxy",
+          "holofoil"
+        ]
+      },
+
+      {
+        type: "king",
+
+        variants: [
+          "normal",
+          "gold",
+          "gummy",
+          "galaxy",
+          "holofoil"
+        ]
+      },
+
+      {
+        type: "striker",
+
+        variants: [
+          "normal",
+          "gold",
+          "gummy",
+          "galaxy",
+          "holofoil"
+        ]
+      },
+
+      {
+        type: "duck",
+
+        variants: [
+          "normal",
+          "gold",
+          "gummy",
+          "galaxy",
+          "gem"
+        ]
+      },
+
+      {
+        type: "demon",
+
+        variants: [
+          "normal",
+          "gold",
+          "gummy",
+          "galaxy",
+          "gem"
+        ]
+      },
+
+      {
+        type: "aura",
+
+        variants: [
+          "normal",
+          "gold",
+          "gummy",
+          "galaxy",
+          "gem"
+        ]
+      }
+    ]
+  },
+
+  {
+    rarity: "legendary",
+
+    types: [
+      {
+        type: "dream",
+
+        variants: [
+          "normal",
+          "gold",
+          "gummy",
+          "galaxy",
+          "cube"
+        ]
+      },
+
+      {
+        type: "punk",
+
+        variants: [
+          "normal",
+          "gold",
+          "gummy",
+          "galaxy",
+          "cube"
+        ]
+      },
+
+      {
+        type: "boss",
+
+        variants: [
+          "normal",
+          "gold",
+          "gummy",
+          "galaxy",
+          "cube"
+        ]
+      },
+
+      {
+        type: "seven",
+
+        variants: [
+          "normal",
+          "gold",
+          "gummy",
+          "galaxy",
+          "holofoil"
+        ]
+      },
+
+      {
+        type: "peely",
+
+        variants: [
+          "normal",
+          "gold",
+          "gummy",
+          "galaxy",
+          "holofoil"
+        ]
+      },
+
+      {
+        type: "llama",
+
+        variants: [
+          "normal",
+          "gold",
+          "gummy",
+          "galaxy",
+          "gem"
+        ]
+      }
+    ]
+  },
+
+  {
+    rarity: "mythic",
+
+    types: [
+      {
+        type: "zero",
+
+        variants: [
+          "normal",
+          "gold",
+          "gummy",
+          "galaxy",
+          "holofoil",
+          "cube",
+          "quack",
+          "gem"
+        ]
+      },
+
+      {
+        type: "grim",
+
+        variants: [
+          "normal",
+          "gold",
+          "gummy",
+          "galaxy",
+          "holofoil",
+          "cube",
+"gem"
+        ]
+      },
+      {
+        type: "batman",
+
+        variants: [
+          "normal",
+          "gold",
+          "gummy",
+          "galaxy",
+          "holofoil",
+          "cube"
+        ]
+      }
+    ]
+  }
+];
+
+/* =========================
+   単独画像
+========================= */
+const STANDALONE_ITEMS = [
+  {
+    type: "peanut",
+    value: 7500
+  },
+
+  {
+    type: "vini",
+    value: 7500
+  },
+
+  {
+    type: "pollo",
+    value: 7500
+  },
+
+  {
+    type: "john",
+    value: 7500
+  },
+
+  {
+    type: "ironmouse",
+    value: 7500
+  }
+];
+
+/* =========================
+   消費ダスト
+
+   すべてのバリアントを同じ方法で管理する。
+   normal・gold・gummy・galaxy・holofoil・
+   cube・gem・quackのどれにも特別な分岐はない。
+
+   holofoilはgold・gummy・galaxyと同額。
+
+   新しいバリアントを追加した場合は、
+   各レアリティへ同じバリアント名を追加する。
+========================= */
+const DUST_VALUES = {
+  rare: {
+    normal: 100,
+    gold: 4000,
+    gummy: 4000,
+    galaxy: 4000,
+    holofoil: 4000,
+    cube: 4000,
+    gem: 4000,
+    quack: 4000
+  },
+
+  epic: {
+    normal: 3000,
+    gold: 6000,
+    gummy: 6000,
+    galaxy: 6000,
+    holofoil: 6000,
+    cube: 6000,
+    gem: 6000,
+    quack: 6000
+  },
+
+  legendary: {
+    normal: 5000,
+    gold: 10000,
+    gummy: 10000,
+    galaxy: 10000,
+    holofoil: 10000,
+    cube: 10000,
+    gem: 10000,
+    quack: 10000
+  },
+
+  mythic: {
+    normal: 7500,
+    gold: 15000,
+    gummy: 15000,
+    galaxy: 15000,
+    holofoil: 15000,
+    cube: 15000,
+    gem: 15000,
+    quack: 15000
+  }
+};
+
+/* =========================
+   自動サイズ調整
+========================= */
+const AUTO_FIT = {
+  minItemSize: 6,
+  maxItemSize: 240,
+
+  safetyMargin: 2
+};
+
+/* =========================
+   対応表生成
+========================= */
+const RARITY_MAP =
+  Object.fromEntries(
+    COLLECTION_ROWS.flatMap(
+      ({
+        rarity,
+        types
+      }) => {
+        return types.map(
+          ({
+            type
+          }) => {
+            return [
+              type,
+              rarity
+            ];
+          }
+        );
+      }
+    )
+  );
+
+const STANDALONE_VALUE_MAP =
+  Object.fromEntries(
+    STANDALONE_ITEMS.map(
+      ({
+        type,
+        value
+      }) => {
+        return [
+          type,
+          value
+        ];
+      }
+    )
+  );
+
+/* =========================
+   HTML要素・状態
+========================= */
+const PEANUT_KEY =
+  "special_peanut";
+
+const root =
+  document.documentElement;
+
+const capture =
+  document.getElementById(
+    "capture"
+  );
+
+const collectionContent =
+  document.getElementById(
+    "collection-content"
+  );
+
+const gallery =
+  document.getElementById(
+    "gallery"
+  );
+
+
+
+const valueButton =
+  document.getElementById(
+    "btn-toggle-val"
+  );
+
+const saveButton =
+  document.getElementById(
+    "btn-save"
+  );
+
+const controls =
+  document.querySelector(
+    ".controls"
+  );
+
+
+
+let layoutFrameId = null;
+
+/* =========================
+   共通処理
+========================= */
+function isMobileView() {
+  return window.matchMedia(
+    "(max-width: 768px)"
+  ).matches;
+}
+
+function getVariants(typeData) {
+  if (
+    !Array.isArray(
+      typeData.variants
+    )
+  ) {
+    return [];
+  }
+
+  /*
+    同じバリアントが重複して書かれても、
+    画像やTOTALを二重にしない。
+  */
+  return [
+    ...new Set(
+      typeData.variants
+    )
+  ];
+}
+
+function getStorageKey(
+  type,
+  variant
+) {
+  if (variant !== null) {
+    return `${type}_${variant}`;
+  }
+
+  return type === "peanut"
+    ? PEANUT_KEY
+    : type;
+}
+
+/* =========================
+   消費ダスト取得
+========================= */
+function getValue(
+  type,
+  variant
+) {
+  if (variant === null) {
+    return (
+      STANDALONE_VALUE_MAP[type]
+      ?? 0
+    );
+  }
+
+  const rarity =
+    RARITY_MAP[type]
+    ?? "legendary";
+
+  const value =
+    DUST_VALUES[rarity]?.[variant];
+
+  /*
+    バリアントを画像設定へ追加したのに、
+    DUST_VALUESへ追加し忘れた場合は
+    コンソールへ分かりやすく表示する。
+  */
+  if (value === undefined) {
+    console.warn(
+      `消費ダスト未設定: rarity=${rarity}, type=${type}, variant=${variant}`
+    );
+
+    return 0;
+  }
+
+  return value;
+}
+
+/* =========================
+   チェックマーク描画
+========================= */
+function drawCheckMark(canvas) {
+  const ctx =
+    canvas.getContext("2d");
+
+  if (!ctx) {
+    return;
+  }
+
+  canvas.width = 200;
+  canvas.height = 200;
+
+  ctx.clearRect(
+    0,
+    0,
+    canvas.width,
+    canvas.height
+  );
+
+  ctx.save();
+  ctx.scale(2, 2);
+
+  ctx.beginPath();
+
+  ctx.moveTo(25, 50);
+  ctx.lineTo(45, 70);
+  ctx.lineTo(80, 25);
+
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+
+  ctx.strokeStyle = "#ffffff";
+  ctx.lineWidth = 22;
+  ctx.stroke();
+
+  ctx.strokeStyle = "#ff2a2a";
+  ctx.lineWidth = 12;
+  ctx.stroke();
+
+  ctx.restore();
+}
+
+function createCheckCanvas() {
+  const canvas =
+    document.createElement(
+      "canvas"
+    );
+
+  canvas.className =
+    "check-canvas";
+
+  drawCheckMark(canvas);
+
+  return canvas;
+}
+
+/* =========================
+   アイテム生成
+========================= */
+function createCollectionItem(
+  type,
+  variant = null
+) {
+  const key =
+    getStorageKey(
+      type,
+      variant
+    );
+
+  const item =
+    document.createElement(
+      "div"
+    );
+
+  const image =
+    document.createElement(
+      "img"
+    );
+
+  const value =
+    document.createElement(
+      "div"
+    );
+
+  item.className =
+    "item";
+
+  /*
+    バリアント行の一括チェックで使用する。
+    表示や配置には影響しない。
+  */
+  item.dataset.storageKey = key;
+  item.dataset.type = type;
+
+  if (variant !== null) {
+    item.dataset.variant = variant;
+  }
+
+  item.classList.toggle(
+    "checked",
+    localStorage.getItem(key)
+    === "true"
+  );
+
+  image.className =
+    "collection-image";
+
+  image.src =
+    variant === null
+      ? `images/${type}.webp`
+      : `images/${type}_${variant}.webp`;
+
+  image.alt =
+    variant === null
+      ? type
+      : `${type} ${variant}`;
+
+  value.className =
+    "value";
+
+  value.textContent =
+    getValue(
+      type,
+      variant
+    );
+
+  item.append(
+    image,
+    createCheckCanvas(),
+    value
+  );
+
+  item.addEventListener(
+    "click",
+    () => {
+      const checked =
+        !item.classList.contains(
+          "checked"
+        );
+
+      item.classList.toggle(
+        "checked",
+        checked
+      );
+
+      localStorage.setItem(
+        key,
+        String(checked)
+      );
+
+      updateCounter();
+      updateVariantBulkCheckboxes();
+    }
+  );
+
+  return item;
+}
+
+/* =========================
+   バリアント表示のtype列順生成
+========================= */
+function getVariantViewTypeOrder() {
+  const types = [];
+  const seenTypes = new Set();
+
+  for (
+    const {
+      types: rowTypes
+    }
+    of COLLECTION_ROWS
+  ) {
+    for (const typeData of rowTypes) {
+      if (seenTypes.has(typeData.type)) {
+        continue;
+      }
+
+      seenTypes.add(typeData.type);
+      types.push(typeData.type);
+    }
+  }
+
+  return types;
+}
+
+/* =========================
+   バリアント表示用データ生成
+========================= */
+function getAllVariantGroups() {
+  const groupMap = new Map();
+
+  for (
+    const {
+      types
+    }
+    of COLLECTION_ROWS
+  ) {
+    for (const typeData of types) {
+      for (
+        const variant
+        of getVariants(typeData)
+      ) {
+        if (!groupMap.has(variant)) {
+          groupMap.set(
+            variant,
+            new Map()
+          );
+        }
+
+        groupMap.get(variant).set(
+          typeData.type,
+          {
+            type: typeData.type,
+            variant
+          }
+        );
+      }
+    }
+  }
+
+  const discoveredVariants = [
+    ...groupMap.keys()
+  ];
+
+  const orderedVariants = [
+    ...VARIANT_DISPLAY_ORDER.filter(
+      variant => groupMap.has(variant)
+    ),
+
+    ...discoveredVariants.filter(
+      variant => {
+        return !VARIANT_DISPLAY_ORDER.includes(
+          variant
+        );
+      }
+    )
+  ];
+
+  return orderedVariants.map(
+    variant => {
+      return {
+        variant,
+        itemsByType: groupMap.get(variant)
+      };
+    }
+  );
+}
+
+/* =========================
+   バリアント表示用の空マス生成
+========================= */
+function createVariantViewPlaceholder() {
+  const placeholder =
+    document.createElement(
+      "div"
+    );
+
+  placeholder.className =
+    "variant-view-placeholder";
+
+  return placeholder;
+}
+
+/* =========================
+   バリアント表示用の1行生成
+========================= */
+function createVariantViewRow(
+  labelText,
+  typeOrder,
+  itemsByType,
+  showBulkCheckbox = true
+) {
+  const row =
+    document.createElement(
+      "div"
+    );
+
+  const header =
+    document.createElement(
+      "div"
+    );
+
+  const label =
+    document.createElement(
+      "div"
+    );
+
+  const itemArea =
+    document.createElement(
+      "div"
+    );
+
+  row.className =
+    "variant-view-row";
+
+  header.className =
+    "variant-view-header";
+
+  label.className =
+    "variant-view-label";
+
+  label.textContent =
+    labelText;
+
+  header.appendChild(label);
+
+  itemArea.className =
+    "variant-view-items";
+
+  if (!showBulkCheckbox) {
+    itemArea.classList.add(
+      "no-bulk-checkbox"
+    );
+  }
+
+  itemArea.style.setProperty(
+    "--variant-view-column-count",
+    Math.max(
+      1,
+      typeOrder.length
+    )
+  );
+
+  /*
+    すべてのバリアント行を同じtype順で走査する。
+    該当バリアントの画像がないtypeには空マスを置く。
+  */
+  for (const type of typeOrder) {
+    const item =
+      itemsByType.get(type);
+
+    if (item) {
+      itemArea.appendChild(
+        createCollectionItem(
+          item.type,
+          item.variant
+        )
+      );
+    } else {
+      itemArea.appendChild(
+        createVariantViewPlaceholder()
+      );
+    }
+  }
+
+  /*
+    最後のtype列のさらに右へ、
+    このバリアント専用の一括チェック欄を置く。
+  */
+  if (showBulkCheckbox) {
+    const bulkCell =
+      document.createElement(
+        "div"
+      );
+
+    const bulkCheckbox =
+      document.createElement(
+        "input"
+      );
+
+    bulkCell.className =
+      "variant-view-bulk-cell";
+
+    bulkCheckbox.type =
+      "checkbox";
+
+    bulkCheckbox.className =
+      "variant-view-bulk-checkbox";
+
+    bulkCheckbox.dataset.variant =
+      labelText;
+
+    bulkCheckbox.setAttribute(
+      "aria-label",
+      `${labelText}をすべてチェック`
+    );
+
+    bulkCheckbox.addEventListener(
+      "change",
+      event => {
+        event.stopPropagation();
+
+        const nextChecked =
+          bulkCheckbox.checked;
+
+        const items =
+          getRenderedVariantItems(
+            labelText
+          );
+
+        for (const item of items) {
+          item.classList.toggle(
+            "checked",
+            nextChecked
+          );
+
+          localStorage.setItem(
+            item.dataset.storageKey,
+            String(nextChecked)
+          );
+        }
+
+        updateCounter();
+        updateVariantBulkCheckboxes();
+      }
+    );
+
+    bulkCell.appendChild(
+      bulkCheckbox
+    );
+
+    itemArea.appendChild(
+      bulkCell
+    );
+  }
+
+  row.append(
+    header,
+    itemArea
+  );
+
+  return row;
+}
+
+/* =========================
+   表示中の指定バリアント画像取得
+========================= */
+function getRenderedVariantItems(
+  variant
+) {
+  return [
+    ...gallery.querySelectorAll(
+      ".item[data-variant]"
+    )
+  ].filter(
+    item => {
+      return item.dataset.variant
+        === variant;
+    }
+  );
+}
+
+/* =========================
+   バリアント一括チェック欄の状態更新
+========================= */
+function updateVariantBulkCheckboxes() {
+  const checkboxes = [
+    ...gallery.querySelectorAll(
+      ".variant-view-bulk-checkbox"
+    )
+  ];
+
+  for (const checkbox of checkboxes) {
+    const variant =
+      checkbox.dataset.variant;
+
+    if (!variant) {
+      continue;
+    }
+
+    const items =
+      getRenderedVariantItems(
+        variant
+      );
+
+    const checkedCount =
+      items.filter(
+        item => {
+          return item.classList.contains(
+            "checked"
+          );
+        }
+      ).length;
+
+    checkbox.checked =
+      items.length > 0
+      && checkedCount === items.length;
+
+    checkbox.indeterminate =
+      checkedCount > 0
+      && checkedCount < items.length;
+
+    checkbox.title = checkbox.checked
+      ? `${variant}をすべて解除`
+      : `${variant}をすべてチェック`;
+  }
+}
+
+/* =========================
+   スマホ版バリアント行列
+
+   行：type
+   列：variant
+========================= */
+function createMobileVariantBulkCheckbox(
+  variant
+) {
+  const checkbox =
+    document.createElement(
+      "input"
+    );
+
+  checkbox.type =
+    "checkbox";
+
+  checkbox.className =
+    "variant-view-bulk-checkbox";
+
+  checkbox.dataset.variant =
+    variant;
+
+  checkbox.setAttribute(
+    "aria-label",
+    `${variant}をすべてチェック`
+  );
+
+  checkbox.addEventListener(
+    "change",
+    event => {
+      event.stopPropagation();
+
+      const nextChecked =
+        checkbox.checked;
+
+      const items =
+        getRenderedVariantItems(
+          variant
+        );
+
+      for (const item of items) {
+        item.classList.toggle(
+          "checked",
+          nextChecked
+        );
+
+        localStorage.setItem(
+          item.dataset.storageKey,
+          String(nextChecked)
+        );
+      }
+
+      updateCounter();
+      updateVariantBulkCheckboxes();
+    }
+  );
+
+  return checkbox;
+}
+
+/* =========================
+   スマホ版バリアント配置
+
+   SPECIAL：横1列
+
+   上段：
+   normal gold gummy galaxy
+   normal gold gummy galaxy
+
+   下段：
+   holofoil・cube・gem・quackを
+   バリアントごとに横1列で表示する。
+========================= */
+function renderMobileVariantView() {
+  const typeOrder =
+    getVariantViewTypeOrder();
+
+  const variantsByType =
+    new Map();
+
+  for (
+    const {
+      types
+    }
+    of COLLECTION_ROWS
+  ) {
+    for (const typeData of types) {
+      variantsByType.set(
+        typeData.type,
+        new Set(
+          getVariants(typeData)
+        )
+      );
+    }
+  }
+
+  const layout =
+    document.createElement(
+      "div"
+    );
+
+  layout.className =
+    "mobile-variant-layout";
+
+  /*
+    SPECIALは最上部へ横一列で配置する。
+  */
+  if (STANDALONE_ITEMS.length > 0) {
+    const special =
+      document.createElement(
+        "div"
+      );
+
+    const specialItems =
+      document.createElement(
+        "div"
+      );
+
+    special.className =
+      "mobile-variant-special";
+
+    specialItems.className =
+      "mobile-variant-special-items";
+
+    for (
+      const {
+        type
+      }
+      of STANDALONE_ITEMS
+    ) {
+      specialItems.appendChild(
+        createCollectionItem(
+          type,
+          null
+        )
+      );
+    }
+
+    special.appendChild(
+      specialItems
+    );
+
+    layout.appendChild(
+      special
+    );
+  }
+
+  /*
+    1種類のバリアントだけを入れた段を生成する。
+
+    columnLimitを超えた場合は途中で改行するが、
+    別のバリアントが同じ行へ混ざることはない。
+  */
+  function createCompactVariantGroup(
+    variant,
+    matchingTypes,
+    columnLimit,
+    primary = false
+  ) {
+    const group =
+      document.createElement(
+        "div"
+      );
+
+    const control =
+      document.createElement(
+        "div"
+      );
+
+    const items =
+      document.createElement(
+        "div"
+      );
+
+    group.className =
+      "mobile-compact-variant-group";
+
+    control.className =
+      "mobile-compact-variant-control";
+
+    items.className =
+      "mobile-compact-variant-items";
+
+    if (primary) {
+      items.classList.add(
+        "mobile-primary-variant-items"
+      );
+
+      items.style.setProperty(
+        "--mobile-primary-column-count",
+        Math.min(
+          columnLimit,
+          Math.max(
+            1,
+            matchingTypes.length
+          )
+        )
+      );
+    } else {
+      items.style.setProperty(
+        "--mobile-secondary-column-count",
+        Math.min(
+          columnLimit,
+          Math.max(
+            1,
+            matchingTypes.length
+          )
+        )
+      );
+    }
+
+    control.appendChild(
+      createMobileVariantBulkCheckbox(
+        variant
+      )
+    );
+
+    for (const type of matchingTypes) {
+      items.appendChild(
+        createCollectionItem(
+          type,
+          variant
+        )
+      );
+    }
+
+    group.append(
+      control,
+      items
+    );
+
+    return group;
+  }
+
+  /*
+    上側：normal・gold・gummy・galaxy。
+
+    各バリアントを完全に別の段へ分け、
+    最大10枚ごとに同じバリアント内で改行する。
+  */
+  const primaryArea =
+    document.createElement(
+      "div"
+    );
+
+  primaryArea.className =
+    "mobile-primary-variants";
+
+  for (
+    const variant
+    of MOBILE_PRIMARY_VARIANTS
+  ) {
+    const matchingTypes =
+      typeOrder.filter(
+        type => {
+          return variantsByType
+            .get(type)
+            ?.has(variant);
+        }
+      );
+
+    if (matchingTypes.length === 0) {
+      continue;
+    }
+
+    primaryArea.appendChild(
+      createCompactVariantGroup(
+        variant,
+        matchingTypes,
+        10,
+        true
+      )
+    );
+  }
+
+  layout.appendChild(
+    primaryArea
+  );
+
+  /*
+    下側：holofoil・cube・gem・quack。
+    各バリアントを独立した横1列にして、途中で改行しない。
+  */
+  const secondaryArea =
+    document.createElement(
+      "div"
+    );
+
+  secondaryArea.className =
+    "mobile-secondary-variants";
+
+  for (
+    const variant
+    of MOBILE_SECONDARY_VARIANTS
+  ) {
+    const matchingTypes =
+      typeOrder.filter(
+        type => {
+          return variantsByType
+            .get(type)
+            ?.has(variant);
+        }
+      );
+
+    if (matchingTypes.length === 0) {
+      continue;
+    }
+
+    secondaryArea.appendChild(
+      createCompactVariantGroup(
+        variant,
+        matchingTypes,
+        matchingTypes.length,
+        false
+      )
+    );
+  }
+
+  layout.appendChild(
+    secondaryArea
+  );
+
+  gallery.appendChild(
+    layout
+  );
+}
+
+/* =========================
+   全バリアント表示
+========================= */
+function renderVariantView() {
+  if (isMobileView()) {
+    renderMobileVariantView();
+
+    return;
+  }
+
+  const typeOrder =
+    getVariantViewTypeOrder();
+
+  for (
+    const {
+      variant,
+      itemsByType
+    }
+    of getAllVariantGroups()
+  ) {
+    gallery.appendChild(
+      createVariantViewRow(
+        variant,
+        typeOrder,
+        itemsByType
+      )
+    );
+  }
+
+  /*
+    peanutなどはバリアントを持たず、
+    他のバリアント行と共通するtype列もない。
+    special行だけは空マスなしで横に並べる。
+  */
+  if (STANDALONE_ITEMS.length > 0) {
+    const standaloneTypeOrder =
+      STANDALONE_ITEMS.map(
+        ({ type }) => type
+      );
+
+    const standaloneMap =
+      new Map(
+        STANDALONE_ITEMS.map(
+          ({ type }) => {
+            return [
+              type,
+              {
+                type,
+                variant: null
+              }
+            ];
+          }
+        )
+      );
+
+    gallery.appendChild(
+      createVariantViewRow(
+        "special",
+        standaloneTypeOrder,
+        standaloneMap,
+        false
+      )
+    );
+  }
+}
+
+/* =========================
+   全アイテムキー取得
+========================= */
+function getAllCollectionKeys() {
+  const keys = new Set();
+
+  for (
+    const {
+      types
+    }
+    of COLLECTION_ROWS
+  ) {
+    for (const typeData of types) {
+      for (
+        const variant
+        of getVariants(typeData)
+      ) {
+        keys.add(
+          getStorageKey(
+            typeData.type,
+            variant
+          )
+        );
+      }
+    }
+  }
+
+  for (
+    const {
+      type
+    }
+    of STANDALONE_ITEMS
+  ) {
+    keys.add(
+      getStorageKey(
+        type,
+        null
+      )
+    );
+  }
+
+  return [
+    ...keys
+  ];
+}
+
+/* =========================
+   カウンター更新
+========================= */
+function updateCounter() {
+  const keys =
+    getAllCollectionKeys();
+
+  const checkedCount =
+    keys.reduce(
+      (
+        count,
+        key
+      ) => {
+        return (
+          count
+          + (
+            localStorage.getItem(key)
+            === "true"
+              ? 1
+              : 0
+          )
+        );
+      },
+      0
+    );
+
+  document
+    .getElementById(
+      "current-count"
+    )
+    .textContent =
+      checkedCount;
+
+  document
+    .getElementById(
+      "total-count"
+    )
+    .textContent =
+      keys.length;
+}
+
+/* =========================
+   バリアント表示を描画
+========================= */
+function renderView() {
+  gallery.replaceChildren();
+
+  document.body.classList.add(
+    "is-variant-view"
+  );
+
+  renderVariantView();
+
+  updateCounter();
+  updateVariantBulkCheckboxes();
+  scheduleAutoLayout();
+}
+
+/* =========================
+   使用可能サイズ取得
+========================= */
+function getAvailableSize() {
+  const style =
+    getComputedStyle(capture);
+
+  const paddingX =
+    parseFloat(
+      style.paddingLeft
+    )
+    + parseFloat(
+      style.paddingRight
+    );
+
+  const paddingY =
+    parseFloat(
+      style.paddingTop
+    )
+    + parseFloat(
+      style.paddingBottom
+    );
+
+  return {
+    width:
+      capture.clientWidth
+      - paddingX
+      - AUTO_FIT.safetyMargin,
+
+    height:
+      capture.clientHeight
+      - paddingY
+      - AUTO_FIT.safetyMargin
+  };
+}
+
+function contentFits() {
+  const available =
+    getAvailableSize();
+
+  const rect =
+    collectionContent
+      .getBoundingClientRect();
+
+  return (
+    rect.width <= available.width
+    && rect.height <= available.height
+  );
+}
+
+/* =========================
+   最大画像サイズ探索
+========================= */
+function findLargestItemSize() {
+  let low =
+    AUTO_FIT.minItemSize;
+
+  let high =
+    AUTO_FIT.maxItemSize;
+
+  /*
+    二分探索で画面に収まる最大サイズを求める。
+  */
+  for (let i = 0; i < 14; i++) {
+    const middle =
+      (low + high) / 2;
+
+    root.style.setProperty(
+      "--item-size",
+      `${middle}px`
+    );
+
+    if (contentFits()) {
+      low = middle;
+    } else {
+      high = middle;
+    }
+  }
+
+  return Math.max(
+    AUTO_FIT.minItemSize,
+    Math.floor(
+      low * 10
+    ) / 10
+  );
+}
+
+function contentFitsWidthOnly() {
+  const available =
+    getAvailableSize();
+
+  const widthTargets = [
+    ...gallery.children
+  ];
+
+  const contentWidth =
+    widthTargets.reduce(
+      (
+        maxWidth,
+        element
+      ) => {
+        return Math.max(
+          maxWidth,
+          element
+            .getBoundingClientRect()
+            .width
+        );
+      },
+      0
+    );
+
+  return contentWidth <= available.width;
+}
+
+function findLargestItemSizeWidthOnly() {
+  let low =
+    AUTO_FIT.minItemSize;
+
+  let high =
+    AUTO_FIT.maxItemSize;
+
+  for (let i = 0; i < 14; i++) {
+    const middle =
+      (low + high) / 2;
+
+    root.style.setProperty(
+      "--item-size",
+      `${middle}px`
+    );
+
+    if (contentFitsWidthOnly()) {
+      low = middle;
+    } else {
+      high = middle;
+    }
+  }
+
+  return Math.max(
+    AUTO_FIT.minItemSize,
+    Math.floor(
+      low * 10
+    ) / 10
+  );
+}
+
+function applyAutoLayout() {
+  /*
+    PC・スマホとも、横幅と高さの両方を測定する。
+    スマホ専用配置は画面内へ収まる最大画像サイズになる。
+  */
+  root.style.setProperty(
+    "--item-size",
+    `${findLargestItemSize()}px`
+  );
+}
+
+function scheduleAutoLayout() {
+  if (layoutFrameId !== null) {
+    cancelAnimationFrame(
+      layoutFrameId
+    );
+  }
+
+  layoutFrameId =
+    requestAnimationFrame(
+      () => {
+        layoutFrameId = null;
+
+        applyAutoLayout();
+      }
+    );
+}
+
+/* =========================
+   消費ダスト表示
+========================= */
+function toggleValues() {
+  const showing =
+    document.body.classList.toggle(
+      "show-values"
+    );
+
+  valueButton.textContent =
+    showing
+      ? "ダスト非表示"
+      : "ダスト表示";
+
+  /*
+    ボタン文字の長さで横幅が変わるため、
+    右側の予約幅も再測定する。
+  */
+  scheduleAutoLayout();
+}
+
+/* =========================
+   画像読み込み待機
+========================= */
+async function waitForImages(
+  target
+) {
+  const images = [
+    ...target.querySelectorAll(
+      ".collection-image"
+    )
+  ];
+
+  await Promise.all(
+    images.map(
+      async image => {
+        if (!image.complete) {
+          await new Promise(
+            resolve => {
+              image.addEventListener(
+                "load",
+                resolve,
+                {
+                  once: true
+                }
+              );
+
+              image.addEventListener(
+                "error",
+                resolve,
+                {
+                  once: true
+                }
+              );
+            }
+          );
+        }
+
+        if (
+          image.naturalWidth > 0
+          && image.decode
+        ) {
+          try {
+            await image.decode();
+          } catch {
+            /*
+              読み込み済みなら保存処理を続行する。
+            */
+          }
+        }
+      }
+    )
+  );
+}
+
+/* =========================
+   保存時の右側余白切り抜き
+========================= */
+function cropControlSpace(
+  sourceCanvas
+) {
+  const captureStyle =
+    getComputedStyle(capture);
+
+  const leftPadding =
+    parseFloat(
+      captureStyle.paddingLeft
+    ) || 0;
+
+  const rightPadding =
+    parseFloat(
+      captureStyle.paddingRight
+    ) || 0;
+
+  /*
+    PC版で右側に追加したボタン用余白だけを除外する。
+    スマホ版は左右paddingが同じなので切り抜かれない。
+  */
+  const extraRightSpace =
+    Math.max(
+      0,
+      rightPadding - leftPadding
+    );
+
+  if (extraRightSpace === 0) {
+    return sourceCanvas;
+  }
+
+  const canvasScale =
+    sourceCanvas.width
+    / capture.clientWidth;
+
+  const croppedWidth =
+    Math.max(
+      1,
+      Math.round(
+        sourceCanvas.width
+        - extraRightSpace
+        * canvasScale
+      )
+    );
+
+  const croppedCanvas =
+    document.createElement(
+      "canvas"
+    );
+
+  croppedCanvas.width =
+    croppedWidth;
+
+  croppedCanvas.height =
+    sourceCanvas.height;
+
+  const ctx =
+    croppedCanvas.getContext(
+      "2d"
+    );
+
+  if (!ctx) {
+    return sourceCanvas;
+  }
+
+  ctx.drawImage(
+    sourceCanvas,
+
+    0,
+    0,
+    croppedWidth,
+    sourceCanvas.height,
+
+    0,
+    0,
+    croppedWidth,
+    sourceCanvas.height
+  );
+
+  return croppedCanvas;
+}
+
+/* =========================
+   PNG保存
+========================= */
+async function savePNG() {
+  await waitForImages(
+    capture
+  );
+
+  let fullCanvas;
+
+  /*
+    TOTAL横の操作ボタンを保存画像へ入れない。
+    非表示にした状態でもう一度最大サイズを計算する。
+  */
+  document.body.classList.add(
+    "is-saving"
+  );
+
+  try {
+    applyAutoLayout();
+
+    await new Promise(
+      resolve => {
+        requestAnimationFrame(
+          () => {
+            requestAnimationFrame(
+              resolve
+            );
+          }
+        );
+      }
+    );
+
+    fullCanvas =
+      await html2canvas(
+        capture,
+        {
+          useCORS: true,
+          backgroundColor: null,
+          scale: 2,
+          logging: false
+        }
+      );
+  } finally {
+    document.body.classList.remove(
+      "is-saving"
+    );
+
+    scheduleAutoLayout();
+  }
+
+  if (!fullCanvas) {
+    return;
+  }
+
+  const saveCanvas =
+    cropControlSpace(
+      fullCanvas
+    );
+
+  const link =
+    document.createElement(
+      "a"
+    );
+
+  link.download =
+    "collection_variant_view.png";
+
+  link.href =
+    saveCanvas.toDataURL(
+      "image/png"
+    );
+
+  link.click();
+}
+
+/* =========================
+   イベント
+========================= */
+valueButton.addEventListener(
+  "click",
+  toggleValues
+);
+
+saveButton.addEventListener(
+  "click",
+  savePNG
+);
+
+let lastMobileView =
+  isMobileView();
+
+function handleViewportChange() {
+  const mobileView =
+    isMobileView();
+
+  if (mobileView !== lastMobileView) {
+    lastMobileView = mobileView;
+    renderView();
+
+    return;
+  }
+
+  scheduleAutoLayout();
+}
+
+window.addEventListener(
+  "resize",
+  handleViewportChange,
+  {
+    passive: true
+  }
+);
+
+window.addEventListener(
+  "orientationchange",
+  handleViewportChange,
+  {
+    passive: true
+  }
+);
+
+if (
+  "ResizeObserver" in window
+) {
+  const resizeObserver =
+    new ResizeObserver(
+      scheduleAutoLayout
+    );
+
+  resizeObserver.observe(
+    capture
+  );
+}
+
+/* =========================
+   初期表示
+========================= */
+renderView();
+</script>
+
+</body>
+</html>	
