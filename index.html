@@ -2060,26 +2060,23 @@ function renderMobileVariantView() {
         "mobile-primary-variant-items"
       );
 
+      /*
+        スマホ版では画像が10枚未満でも10列ぶんの幅を確保する。
+        これにより右側の一括チェック欄のx座標を全バリアントで統一する。
+      */
       items.style.setProperty(
         "--mobile-primary-column-count",
-        Math.min(
-          columnLimit,
-          Math.max(
-            1,
-            matchingTypes.length
-          )
-        )
+        columnLimit
       );
     } else {
+      /*
+        cube・gem・quackなど画像数が10枚未満でも、
+        常に10列ぶんのグリッド幅を確保する。
+        空いている列は何も表示せず、その右側にチェック欄を揃える。
+      */
       items.style.setProperty(
         "--mobile-secondary-column-count",
-        Math.min(
-          columnLimit,
-          Math.max(
-            1,
-            matchingTypes.length
-          )
-        )
+        columnLimit
       );
     }
 
