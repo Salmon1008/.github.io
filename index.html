@@ -604,8 +604,12 @@ body.is-saving .controls {
   }
 
   /*
-    スマホではバリアント名と一括チェックを画像の上へ置く。
-    画像の左右には何も置かないため、画面幅をすべて画像へ使える。
+    スマホではバリアント名を画像群の上へ置き、
+    一括チェックは画像群の右側に独立した専用領域として置く。
+
+    画像と一括チェックのクリック領域は重ならない。
+    右側にチェック領域を追加することで、
+    画像群そのものは画面中央より少し左へ寄る。
   */
   .mobile-compact-variant-header {
     width: 100%;
@@ -615,7 +619,6 @@ body.is-saving .controls {
     align-items: center;
     justify-content: flex-start;
 
-    gap: 3px;
     padding: 0 1px;
   }
 
@@ -640,24 +643,57 @@ body.is-saving .controls {
     pointer-events: none;
   }
 
+  /*
+    画像グリッドと右側チェック欄を横並びにする本体。
+  */
+  .mobile-compact-variant-body {
+    width: max-content;
+
+    display: flex;
+    align-items: stretch;
+    justify-content: flex-start;
+
+    gap: 2px;
+  }
+
+  /*
+    右側の一括チェック専用領域。
+    チェックボックス自体よりかなり広くして押しやすくする。
+    画像領域とは別要素なので誤タップしない。
+  */
   .mobile-compact-variant-control {
-    width: auto;
-    height: 13px;
+    flex: 0 0 32px;
+
+    width: 32px;
+    min-width: 32px;
+    min-height: var(--item-size);
 
     display: flex;
     align-items: center;
     justify-content: center;
+
+    cursor: pointer;
+    touch-action: manipulation;
+
+    background: rgba(255, 255, 255, 0.22);
+
+    border-left: 1px solid rgba(255, 255, 255, 0.65);
+    border-radius: 0 3px 3px 0;
   }
 
   .mobile-compact-variant-control
   .variant-view-bulk-checkbox {
-    width: 12px;
-    height: 12px;
+    width: 20px;
+    height: 20px;
+
+    margin: 0;
 
     accent-color: #ff5a5a;
 
     background: rgba(255, 255, 255, 0.92);
-    border-radius: 2px;
+    border-radius: 3px;
+
+    cursor: pointer;
   }
 
   .variant-view-bulk-checkbox {
@@ -1988,6 +2024,11 @@ function renderMobileVariantView() {
         "div"
       );
 
+    const body =
+      document.createElement(
+        "div"
+      );
+
     const items =
       document.createElement(
         "div"
@@ -2007,6 +2048,9 @@ function renderMobileVariantView() {
 
     control.className =
       "mobile-compact-variant-control";
+
+    body.className =
+      "mobile-compact-variant-body";
 
     items.className =
       "mobile-compact-variant-items";
@@ -2039,14 +2083,44 @@ function renderMobileVariantView() {
       );
     }
 
-    control.appendChild(
+    const bulkCheckbox =
       createMobileVariantBulkCheckbox(
         variant
-      )
+      );
+
+    control.appendChild(
+      bulkCheckbox
     );
 
-    header.append(
-      control,
+    /*
+      チェックボックスそのものだけでなく、
+      右側の専用領域全体をタップ可能にする。
+
+      この領域は画像グリッドとは完全に別なので、
+      画像側のクリック判定とは重ならない。
+    */
+    control.addEventListener(
+      "click",
+      event => {
+        if (event.target === bulkCheckbox) {
+          return;
+        }
+
+        bulkCheckbox.checked =
+          !bulkCheckbox.checked;
+
+        bulkCheckbox.dispatchEvent(
+          new Event(
+            "change",
+            {
+              bubbles: true
+            }
+          )
+        );
+      }
+    );
+
+    header.appendChild(
       label
     );
 
@@ -2059,9 +2133,14 @@ function renderMobileVariantView() {
       );
     }
 
+    body.append(
+      items,
+      control
+    );
+
     group.append(
       header,
-      items
+      body
     );
 
     return group;
