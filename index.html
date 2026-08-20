@@ -103,15 +103,6 @@ body {
   gap: 8px;
 }
 
-.header-spacer {
-  width: var(--item-size);
-  height: var(--item-size);
-
-  flex-shrink: 0;
-
-  visibility: hidden;
-}
-
 #counter {
   color: #ffffff;
 
@@ -121,6 +112,48 @@ body {
   letter-spacing: 2px;
 
   -webkit-text-stroke: 1.5px #000000;
+}
+
+/* =========================
+   ページネーション
+========================= */
+#pagination-area {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 5px;
+}
+
+.page-btn {
+  min-width: 100px;
+  height: 34px;
+
+  padding: 0 15px;
+
+  font-size: 16px;
+  font-weight: bold;
+
+  border: 2px solid #ffffff;
+  border-radius: 17px;
+
+  background: rgba(0, 0, 0, 0.4);
+  color: #ffffff;
+
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s ease;
+}
+
+.page-btn.active {
+  background: #ff5d04;
+  border-color: #ffffff;
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.8);
+}
+
+/* PNG保存時はページボタンを非表示にする */
+body.is-saving #pagination-area {
+  display: none;
 }
 
 /* =========================
@@ -136,18 +169,8 @@ body {
   gap: var(--gap-block);
 }
 
-.rarity-row {
-  align-items: start;
-
-  gap: var(--gap-block);
-}
-
-
 /* =========================
    バリアントごとの表示
-
-   1つの枠が1つのバリアントに対応し、
-   枠内の画像は横1行に並ぶ。
 ========================= */
 .variant-view-row {
   flex: 0 0 auto;
@@ -155,10 +178,6 @@ body {
   display: flex;
   align-items: center;
 
-  /*
-    左にバリアント名専用列、右に画像グリッドを置く。
-    ラベルは画像へ重ならず、行の高さも画像1枚分のまま。
-  */
   gap: 3px;
   padding: 2px 3px;
 
@@ -213,12 +232,6 @@ body {
   -webkit-text-stroke: 0.7px #000000;
 }
 
-/*
-  各バリアント行の右端に置く一括チェック欄。
-
-  type用の画像列の後ろへ専用の細い列を1つ追加する。
-  既存の画像列の順番や間隔は変更しない。
-*/
 .variant-view-bulk-cell {
   width: var(--variant-bulk-column-width);
   height: var(--item-size);
@@ -239,11 +252,6 @@ body {
 .variant-view-items {
   display: grid;
 
-  /*
-    全バリアント行で同じtype列数を使用する。
-    画像が存在しないtypeには透明な空マスを置くため、
-    同じtypeの画像が必ず同じ縦列に揃う。
-  */
   grid-template-columns:
     repeat(
       var(--variant-view-column-count),
@@ -256,10 +264,6 @@ body {
   gap: var(--gap-item);
 }
 
-/*
-  special行はバリアントではないため、
-  右端の一括チェック列を作らない。
-*/
 .variant-view-items.no-bulk-checkbox {
   grid-template-columns: repeat(
     var(--variant-view-column-count),
@@ -275,16 +279,8 @@ body {
   pointer-events: none;
 }
 
-
-
 /* =========================
    スマホ専用バリアント配置
-
-   ・SPECIALは横1列
-   ・normal～galaxyはバリアントごとに独立した段
-   ・同じバリアントの途中でのみ改行する
-   ・holofoil・cube・gem・quackは
-     バリアントごとに横1列で表示する
 ========================= */
 .mobile-variant-layout,
 .mobile-primary-variants,
@@ -326,10 +322,6 @@ body {
   gap: var(--gap-item);
 }
 
-/*
-  normal～galaxyは最大10枚で改行する。
-  1つのグリッドには1種類のバリアントしか入らない。
-*/
 .mobile-primary-variant-items {
   grid-template-columns: repeat(
     var(--mobile-primary-column-count, 10),
@@ -415,10 +407,6 @@ body.show-values .value {
 
 /* =========================
    ボタン
-
-   TOTALはヘッダーの完全な中央へ固定する。
-   ボタンは通常レイアウトから外して右端へ置くため、
-   ボタン幅によってTOTALの位置は一切ずれない。
 ========================= */
 .controls {
   z-index: 10;
@@ -463,10 +451,6 @@ button {
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-/*
-  PNG保存中だけ操作ボタンを非表示にする。
-  ボタンは保存画像へ写らない。
-*/
 body.is-saving .controls {
   display: none;
 }
@@ -488,18 +472,9 @@ body.is-saving .controls {
     --gap-item: 1px;
     --gap-block: 1px;
 
-    /*
-      スマホ下部の操作欄に必要な高さだけを予約する。
-      以前の広告用の大きな上下余白は使わない。
-    */
     --mobile-controls-reserve: 35px;
   }
 
-  /*
-    上下左右の余白を最小限まで縮める。
-    下側は操作ボタン＋iPhoneのセーフエリア分だけ確保し、
-    残った高さを画像の自動拡大へ回す。
-  */
   #capture {
     padding:
       1px
@@ -515,7 +490,6 @@ body.is-saving .controls {
     justify-content: center;
   }
 
-  /* PNG保存時は操作ボタンが消えるため、下部予約もなくす。 */
   body.is-saving #capture {
     padding: 1px 2px;
   }
@@ -535,6 +509,17 @@ body.is-saving .controls {
     font-size: 17px;
 
     -webkit-text-stroke: 1px #000000;
+  }
+  
+  #pagination-area {
+    margin-bottom: 2px;
+  }
+  
+  .page-btn {
+    min-width: 70px;
+    height: 28px;
+    font-size: 12px;
+    padding: 0 10px;
   }
 
   body.is-variant-view #gallery {
@@ -560,22 +545,11 @@ body.is-saving .controls {
     gap: 1px;
   }
 
-  /* SPECIALは5枚を横1列にする。 */
   .mobile-variant-special {
     display: block;
     padding: 0;
   }
 
-  /*
-    normal～galaxyをバリアントごとの段にする。
-
-    normalだけの段
-    goldだけの段
-    gummyだけの段
-    galaxyだけの段
-
-    横幅を超えた場合も、同じバリアントの中で改行する。
-  */
   .mobile-primary-variants,
   .mobile-secondary-variants {
     width: max-content;
@@ -586,11 +560,6 @@ body.is-saving .controls {
 
     gap: 0;
   }
-
-  /*
-    holofoil・cube・gem・quackも最大10列で折り返す。
-    横幅を10枚分に抑え、余った縦方向を利用して画像を大きくする。
-  */
 
   .mobile-compact-variant-group {
     width: max-content;
@@ -603,14 +572,6 @@ body.is-saving .controls {
     padding: 0;
   }
 
-  /*
-    スマホではバリアント名を画像群の上へ置き、
-    一括チェックは画像群の右側に独立した専用領域として置く。
-
-    画像と一括チェックのクリック領域は重ならない。
-    右側にチェック領域を追加することで、
-    画像群そのものは画面中央より少し左へ寄る。
-  */
   .mobile-compact-variant-header {
     width: 100%;
     height: 13px;
@@ -643,9 +604,6 @@ body.is-saving .controls {
     pointer-events: none;
   }
 
-  /*
-    画像グリッドと右側チェック欄を横並びにする本体。
-  */
   .mobile-compact-variant-body {
     width: max-content;
 
@@ -656,11 +614,6 @@ body.is-saving .controls {
     gap: 2px;
   }
 
-  /*
-    右側の一括チェック専用領域。
-    チェックボックス自体よりかなり広くして押しやすくする。
-    画像領域とは別要素なので誤タップしない。
-  */
   .mobile-compact-variant-control {
     flex: 0 0 32px;
 
@@ -710,10 +663,6 @@ body.is-saving .controls {
     font-size: 6px;
   }
 
-  /*
-    スマホの操作ボタンは画面下部中央へ固定する。
-    TOTALの中央位置には影響しない。
-  */
   .controls {
     position: fixed;
 
@@ -739,16 +688,12 @@ body.is-saving .controls {
   button {
     min-width: 0;
     height: 28px;
-
     padding: 0 7px;
-
     font-size: 11px;
-
     border-radius: 5px;
     box-shadow: none;
   }
 }
-
 </style>
 </head>
 
@@ -766,22 +711,13 @@ body.is-saving .controls {
       </div>
 
       <div class="controls">
-
-        <button
-          id="btn-toggle-val"
-          type="button"
-        >
-          ダスト表示
-        </button>
-
-        <button
-          id="btn-save"
-          type="button"
-        >
-          PNG
-        </button>
+        <button id="btn-toggle-val" type="button">ダスト表示</button>
+        <button id="btn-save" type="button">PNG</button>
       </div>
     </div>
+
+    <!-- ページ切り替え用 -->
+    <div id="pagination-area"></div>
 
     <div id="gallery"></div>
 
@@ -789,51 +725,8 @@ body.is-saving .controls {
 </div>
 
 <script>
-/*
-  ========================================
-  画像とバリアントの追加方法
-  ========================================
-
-  各typeには、表示したいバリアントを
-  variantsへ表示順どおりにすべて書く。
-
-  例：
-
-  {
-    type: "sample",
-    variants: [
-      "normal",
-      "gold",
-      "gummy",
-      "galaxy",
-      "holofoil",
-      "cube",
-      "quack"
-    ]
-  }
-
-  holofoil・cube・gem・quackを含め、
-  すべて同じバリアントとして扱う。
-
-  読み込まれる画像名：
-
-  images/normal/sample_normal.webp
-  images/gold/sample_gold.webp
-  images/holofoil/sample_holofoil.webp
-  images/cube/sample_cube.webp
-  images/quack/sample_quack.webp
-
-  バリアントを持たない単独画像は従来どおり：
-
-  images/peanut.webp
-  images/vini.webp
-*/
-
 /* =========================
    バリアント表示時の行順
-
-   ここにない新しいバリアントは、
-   データ内で最初に見つかった順で末尾へ追加される。
 ========================= */
 const VARIANT_DISPLAY_ORDER = [
   "normal",
@@ -864,339 +757,97 @@ const MOBILE_SECONDARY_VARIANTS = [
 ];
 
 /* =========================
-   コレクション設定
+   ページ別コレクション設定
 ========================= */
-const COLLECTION_ROWS = [
+const PAGES = [
   {
-    rarity: "rare",
-
-    types: [
+    label: "ページ1",
+    collection: [
       {
-        type: "water",
-
-        variants: [
-          "normal",
-          "gold",
-          "gummy",
-          "galaxy",
-          "holofoil",
-          "quack",
-          "gem"
-        ]
-      },
-
-      {
-        type: "fire",
-
-        variants: [
-          "normal",
-          "gold",
-          "gummy",
-          "galaxy",
-          "holofoil",
-          "cube",
-          "quack"
-        ]
-      },
-
-      {
-        type: "earth",
-
-        variants: [
-          "normal",
-          "gold",
-          "gummy",
-          "galaxy",
-          "cube",
-          "quack",
-          "gem"
-        ]
-      },
-
-      {
-        type: "air",
-
-        variants: [
-          "normal",
-          "gold",
-          "gummy",
-          "galaxy",
-          "holofoil"
-        ]
-      },
-
-      {
-        type: "fish",
-
-        variants: [
-          "normal",
-          "gold",
-          "gummy",
-          "galaxy",
-          "cube"
+        rarity: "rare", // 仮レアリティ
+        types: [
+          { type: "A", variants: ["normal", "gold"] },
+          { type: "B", variants: ["normal", "gold"] },
+          { type: "C", variants: ["normal", "gold"] },
+          { type: "D", variants: ["normal", "gold"] },
+          { type: "E", variants: ["normal", "gold"] }
         ]
       }
-    ]
+    ],
+    standalone: [] // page1用の単独画像があればここに追加
   },
-
   {
-    rarity: "epic",
-
-    types: [
+    label: "ページ2",
+    collection: [
       {
-        type: "ghost",
-
-        variants: [
-          "normal",
-          "gold",
-          "gummy",
-          "galaxy",
-          "holofoil"
+        rarity: "rare",
+        types: [
+          { type: "water", variants: ["normal", "gold", "gummy", "galaxy", "holofoil", "quack", "gem"] },
+          { type: "fire", variants: ["normal", "gold", "gummy", "galaxy", "holofoil", "cube", "quack"] },
+          { type: "earth", variants: ["normal", "gold", "gummy", "galaxy", "cube", "quack", "gem"] },
+          { type: "air", variants: ["normal", "gold", "gummy", "galaxy", "holofoil"] },
+          { type: "fish", variants: ["normal", "gold", "gummy", "galaxy", "cube"] }
         ]
       },
-
       {
-        type: "king",
-
-        variants: [
-          "normal",
-          "gold",
-          "gummy",
-          "galaxy",
-          "holofoil"
+        rarity: "epic",
+        types: [
+          { type: "ghost", variants: ["normal", "gold", "gummy", "galaxy", "holofoil"] },
+          { type: "king", variants: ["normal", "gold", "gummy", "galaxy", "holofoil"] },
+          { type: "striker", variants: ["normal", "gold", "gummy", "galaxy", "holofoil"] },
+          { type: "duck", variants: ["normal", "gold", "gummy", "galaxy", "gem"] },
+          { type: "demon", variants: ["normal", "gold", "gummy", "galaxy", "gem"] },
+          { type: "aura", variants: ["normal", "gold", "gummy", "galaxy", "gem"] }
         ]
       },
-
       {
-        type: "striker",
-
-        variants: [
-          "normal",
-          "gold",
-          "gummy",
-          "galaxy",
-          "holofoil"
+        rarity: "legendary",
+        types: [
+          { type: "dream", variants: ["normal", "gold", "gummy", "galaxy", "cube"] },
+          { type: "punk", variants: ["normal", "gold", "gummy", "galaxy", "cube"] },
+          { type: "boss", variants: ["normal", "gold", "gummy", "galaxy", "cube"] },
+          { type: "seven", variants: ["normal", "gold", "gummy", "galaxy", "holofoil"] },
+          { type: "peely", variants: ["normal", "gold", "gummy", "galaxy", "holofoil"] },
+          { type: "llama", variants: ["normal", "gold", "gummy", "galaxy", "gem"] }
         ]
       },
-
       {
-        type: "duck",
-
-        variants: [
-          "normal",
-          "gold",
-          "gummy",
-          "galaxy",
-          "gem"
-        ]
-      },
-
-      {
-        type: "demon",
-
-        variants: [
-          "normal",
-          "gold",
-          "gummy",
-          "galaxy",
-          "gem"
-        ]
-      },
-
-      {
-        type: "aura",
-
-        variants: [
-          "normal",
-          "gold",
-          "gummy",
-          "galaxy",
-          "gem"
+        rarity: "mythic",
+        types: [
+          { type: "zero", variants: ["normal", "gold", "gummy", "galaxy", "holofoil", "cube", "quack", "gem"] },
+          { type: "grim", variants: ["normal", "gold", "gummy", "galaxy", "holofoil", "cube", "gem"] },
+          { type: "batman", variants: ["normal", "gold", "gummy", "galaxy", "holofoil", "cube"] }
         ]
       }
-    ]
-  },
-
-  {
-    rarity: "legendary",
-
-    types: [
-      {
-        type: "dream",
-
-        variants: [
-          "normal",
-          "gold",
-          "gummy",
-          "galaxy",
-          "cube"
-        ]
-      },
-
-      {
-        type: "punk",
-
-        variants: [
-          "normal",
-          "gold",
-          "gummy",
-          "galaxy",
-          "cube"
-        ]
-      },
-
-      {
-        type: "boss",
-
-        variants: [
-          "normal",
-          "gold",
-          "gummy",
-          "galaxy",
-          "cube"
-        ]
-      },
-
-      {
-        type: "seven",
-
-        variants: [
-          "normal",
-          "gold",
-          "gummy",
-          "galaxy",
-          "holofoil"
-        ]
-      },
-
-      {
-        type: "peely",
-
-        variants: [
-          "normal",
-          "gold",
-          "gummy",
-          "galaxy",
-          "holofoil"
-        ]
-      },
-
-      {
-        type: "llama",
-
-        variants: [
-          "normal",
-          "gold",
-          "gummy",
-          "galaxy",
-          "gem"
-        ]
-      }
-    ]
-  },
-
-  {
-    rarity: "mythic",
-
-    types: [
-      {
-        type: "zero",
-
-        variants: [
-          "normal",
-          "gold",
-          "gummy",
-          "galaxy",
-          "holofoil",
-          "cube",
-          "quack",
-          "gem"
-        ]
-      },
-
-      {
-        type: "grim",
-
-        variants: [
-          "normal",
-          "gold",
-          "gummy",
-          "galaxy",
-          "holofoil",
-          "cube",
-"gem"
-        ]
-      },
-      {
-        type: "batman",
-
-        variants: [
-          "normal",
-          "gold",
-          "gummy",
-          "galaxy",
-          "holofoil",
-          "cube"
-        ]
-      }
+    ],
+    standalone: [
+      { type: "peanut" },
+      { type: "vini" },
+      { type: "pollo" },
+      { type: "john" },
+      { type: "ironmouse" }
     ]
   }
 ];
 
-/* =========================
-   単独画像
-========================= */
-const STANDALONE_ITEMS = [
-  {
-    type: "peanut"
-  },
+let currentPageIndex = 0;
 
-  {
-    type: "vini"
-  },
+function getCurrentCollection() {
+  return PAGES[currentPageIndex].collection;
+}
 
-  {
-    type: "pollo"
-  },
-
-  {
-    type: "john"
-  },
-
-  {
-    type: "ironmouse"
-  }
-];
+function getCurrentStandalone() {
+  return PAGES[currentPageIndex].standalone;
+}
 
 /* =========================
    消費ダスト
-
-   各レアリティはnormalと、それ以外の2種類だけで管理する。
-   gold・gummy・galaxy・holofoil・cube・gem・quackは
-   すべてotherの値を使用する。
-
-   SPECIALはすべてmythic扱いとし、mythic.normalを使用する。
 ========================= */
 const DUST_VALUES = {
-  rare: {
-    normal: 100,
-    other: 2700
-  },
-
-  epic: {
-    normal: 2700,
-    other: 4000
-  },
-
-  legendary: {
-    normal: 4500,
-    other: 6750
-  },
-
-  mythic: {
-    normal: 6750,
-    other: 10000
-  }
+  rare: { normal: 100, other: 2700 },
+  epic: { normal: 2700, other: 4000 },
+  legendary: { normal: 4500, other: 6750 },
+  mythic: { normal: 6750, other: 10000 }
 };
 
 /* =========================
@@ -1205,76 +856,34 @@ const DUST_VALUES = {
 const AUTO_FIT = {
   minItemSize: 6,
   maxItemSize: 240,
-
   safetyMargin: 2
 };
 
 /* =========================
-   対応表生成
+   対応表生成 (全ページを走査)
 ========================= */
-const RARITY_MAP =
-  Object.fromEntries(
-    COLLECTION_ROWS.flatMap(
-      ({
-        rarity,
-        types
-      }) => {
-        return types.map(
-          ({
-            type
-          }) => {
-            return [
-              type,
-              rarity
-            ];
-          }
-        );
-      }
-    )
-  );
+const RARITY_MAP = {};
+PAGES.forEach(page => {
+  page.collection.forEach(row => {
+    row.types.forEach(typeData => {
+      RARITY_MAP[typeData.type] = row.rarity;
+    });
+  });
+});
 
 /* =========================
    HTML要素・状態
 ========================= */
-const PEANUT_KEY =
-  "special_peanut";
+const PEANUT_KEY = "special_peanut";
+const root = document.documentElement;
+const capture = document.getElementById("capture");
+const collectionContent = document.getElementById("collection-content");
+const gallery = document.getElementById("gallery");
+const paginationArea = document.getElementById("pagination-area");
 
-const root =
-  document.documentElement;
-
-const capture =
-  document.getElementById(
-    "capture"
-  );
-
-const collectionContent =
-  document.getElementById(
-    "collection-content"
-  );
-
-const gallery =
-  document.getElementById(
-    "gallery"
-  );
-
-
-
-const valueButton =
-  document.getElementById(
-    "btn-toggle-val"
-  );
-
-const saveButton =
-  document.getElementById(
-    "btn-save"
-  );
-
-const controls =
-  document.querySelector(
-    ".controls"
-  );
-
-
+const valueButton = document.getElementById("btn-toggle-val");
+const saveButton = document.getElementById("btn-save");
+const controls = document.querySelector(".controls");
 
 let layoutFrameId = null;
 
@@ -1282,76 +891,36 @@ let layoutFrameId = null;
    共通処理
 ========================= */
 function isMobileView() {
-  return window.matchMedia(
-    "(max-width: 768px)"
-  ).matches;
+  return window.matchMedia("(max-width: 768px)").matches;
 }
 
 function getVariants(typeData) {
-  if (
-    !Array.isArray(
-      typeData.variants
-    )
-  ) {
-    return [];
-  }
-
-  /*
-    同じバリアントが重複して書かれても、
-    画像やTOTALを二重にしない。
-  */
-  return [
-    ...new Set(
-      typeData.variants
-    )
-  ];
+  if (!Array.isArray(typeData.variants)) return [];
+  return [...new Set(typeData.variants)];
 }
 
-function getStorageKey(
-  type,
-  variant
-) {
+function getStorageKey(type, variant) {
   if (variant !== null) {
     return `${type}_${variant}`;
   }
-
-  return type === "peanut"
-    ? PEANUT_KEY
-    : type;
+  return type === "peanut" ? PEANUT_KEY : type;
 }
 
 /* =========================
    消費ダスト取得
 ========================= */
-function getValue(
-  type,
-  variant
-) {
-  /* SPECIALはすべてmythicのnormal価格を使用する。 */
+function getValue(type, variant) {
   if (variant === null) {
     return DUST_VALUES.mythic.normal;
   }
-
-  const rarity =
-    RARITY_MAP[type]
-    ?? "legendary";
-
-  const priceType =
-    variant === "normal"
-      ? "normal"
-      : "other";
-
-  const value =
-    DUST_VALUES[rarity]?.[priceType];
-
+  const rarity = RARITY_MAP[type] ?? "legendary";
+  const priceType = variant === "normal" ? "normal" : "other";
+  const value = DUST_VALUES[rarity]?.[priceType];
+  
   if (value === undefined) {
-    console.warn(
-      `消費ダスト未設定: rarity=${rarity}, type=${type}, variant=${variant}`
-    );
-
+    console.warn(`消費ダスト未設定: rarity=${rarity}, type=${type}, variant=${variant}`);
     return 0;
   }
-
   return value;
 }
 
@@ -1359,1483 +928,542 @@ function getValue(
    チェックマーク描画
 ========================= */
 function drawCheckMark(canvas) {
-  const ctx =
-    canvas.getContext("2d");
-
-  if (!ctx) {
-    return;
-  }
-
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return;
   canvas.width = 200;
   canvas.height = 200;
-
-  ctx.clearRect(
-    0,
-    0,
-    canvas.width,
-    canvas.height
-  );
-
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.save();
   ctx.scale(2, 2);
-
   ctx.beginPath();
-
   ctx.moveTo(25, 50);
   ctx.lineTo(45, 70);
   ctx.lineTo(80, 25);
-
   ctx.lineCap = "round";
   ctx.lineJoin = "round";
-
   ctx.strokeStyle = "#ffffff";
   ctx.lineWidth = 22;
   ctx.stroke();
-
   ctx.strokeStyle = "#ff2a2a";
   ctx.lineWidth = 12;
   ctx.stroke();
-
   ctx.restore();
 }
 
 function createCheckCanvas() {
-  const canvas =
-    document.createElement(
-      "canvas"
-    );
-
-  canvas.className =
-    "check-canvas";
-
+  const canvas = document.createElement("canvas");
+  canvas.className = "check-canvas";
   drawCheckMark(canvas);
-
   return canvas;
 }
 
 /* =========================
    アイテム生成
 ========================= */
-function createCollectionItem(
-  type,
-  variant = null
-) {
-  const key =
-    getStorageKey(
-      type,
-      variant
-    );
-
-  const item =
-    document.createElement(
-      "div"
-    );
-
-  const image =
-    document.createElement(
-      "img"
-    );
-
-  const value =
-    document.createElement(
-      "div"
-    );
-
-  item.className =
-    "item";
-
-  /*
-    バリアント行の一括チェックで使用する。
-    表示や配置には影響しない。
-  */
+function createCollectionItem(type, variant = null) {
+  const key = getStorageKey(type, variant);
+  const item = document.createElement("div");
+  const image = document.createElement("img");
+  const value = document.createElement("div");
+  
+  item.className = "item";
   item.dataset.storageKey = key;
   item.dataset.type = type;
-
-  if (variant !== null) {
-    item.dataset.variant = variant;
-  }
-
-  item.classList.toggle(
-    "checked",
-    localStorage.getItem(key)
-    === "true"
-  );
-
-  image.className =
-    "collection-image";
-
-  image.src =
-    variant === null
-      ? `images/special/${type}.webp`
-      : `images/${variant}/${type}_${variant}.webp`;
-
-  image.alt =
-    variant === null
-      ? type
-      : `${type} ${variant}`;
-
-  value.className =
-    "value";
-
-  value.textContent =
-    getValue(
-      type,
-      variant
-    );
-
-  item.append(
-    image,
-    createCheckCanvas(),
-    value
-  );
-
-  item.addEventListener(
-    "click",
-    () => {
-      const checked =
-        !item.classList.contains(
-          "checked"
-        );
-
-      item.classList.toggle(
-        "checked",
-        checked
-      );
-
-      localStorage.setItem(
-        key,
-        String(checked)
-      );
-
-      updateCounter();
-      updateVariantBulkCheckboxes();
-    }
-  );
-
+  if (variant !== null) item.dataset.variant = variant;
+  
+  item.classList.toggle("checked", localStorage.getItem(key) === "true");
+  
+  image.className = "collection-image";
+  image.src = variant === null
+    ? `images/special/${type}.webp`
+    : `images/${variant}/${type}_${variant}.webp`;
+  image.alt = variant === null ? type : `${type} ${variant}`;
+  
+  value.className = "value";
+  value.textContent = getValue(type, variant);
+  
+  item.append(image, createCheckCanvas(), value);
+  item.addEventListener("click", () => {
+    const checked = !item.classList.contains("checked");
+    item.classList.toggle("checked", checked);
+    localStorage.setItem(key, String(checked));
+    updateCounter();
+    updateVariantBulkCheckboxes();
+  });
+  
   return item;
 }
 
 /* =========================
-   バリアント表示のtype列順生成
+   バリアント表示のtype列順生成 (現在ページのみ)
 ========================= */
 function getVariantViewTypeOrder() {
   const types = [];
   const seenTypes = new Set();
-
-  for (
-    const {
-      types: rowTypes
-    }
-    of COLLECTION_ROWS
-  ) {
+  for (const { types: rowTypes } of getCurrentCollection()) {
     for (const typeData of rowTypes) {
-      if (seenTypes.has(typeData.type)) {
-        continue;
-      }
-
+      if (seenTypes.has(typeData.type)) continue;
       seenTypes.add(typeData.type);
       types.push(typeData.type);
     }
   }
-
   return types;
 }
 
 /* =========================
-   バリアント表示用データ生成
+   バリアント表示用データ生成 (現在ページのみ)
 ========================= */
 function getAllVariantGroups() {
   const groupMap = new Map();
-
-  for (
-    const {
-      types
-    }
-    of COLLECTION_ROWS
-  ) {
+  for (const { types } of getCurrentCollection()) {
     for (const typeData of types) {
-      for (
-        const variant
-        of getVariants(typeData)
-      ) {
-        if (!groupMap.has(variant)) {
-          groupMap.set(
-            variant,
-            new Map()
-          );
-        }
-
-        groupMap.get(variant).set(
-          typeData.type,
-          {
-            type: typeData.type,
-            variant
-          }
-        );
+      for (const variant of getVariants(typeData)) {
+        if (!groupMap.has(variant)) groupMap.set(variant, new Map());
+        groupMap.get(variant).set(typeData.type, { type: typeData.type, variant });
       }
     }
   }
-
-  const discoveredVariants = [
-    ...groupMap.keys()
-  ];
-
+  const discoveredVariants = [...groupMap.keys()];
   const orderedVariants = [
-    ...VARIANT_DISPLAY_ORDER.filter(
-      variant => groupMap.has(variant)
-    ),
-
-    ...discoveredVariants.filter(
-      variant => {
-        return !VARIANT_DISPLAY_ORDER.includes(
-          variant
-        );
-      }
-    )
+    ...VARIANT_DISPLAY_ORDER.filter(variant => groupMap.has(variant)),
+    ...discoveredVariants.filter(variant => !VARIANT_DISPLAY_ORDER.includes(variant))
   ];
-
-  return orderedVariants.map(
-    variant => {
-      return {
-        variant,
-        itemsByType: groupMap.get(variant)
-      };
-    }
-  );
+  return orderedVariants.map(variant => ({
+    variant,
+    itemsByType: groupMap.get(variant)
+  }));
 }
 
-/* =========================
-   バリアント表示用の空マス生成
-========================= */
 function createVariantViewPlaceholder() {
-  const placeholder =
-    document.createElement(
-      "div"
-    );
-
-  placeholder.className =
-    "variant-view-placeholder";
-
+  const placeholder = document.createElement("div");
+  placeholder.className = "variant-view-placeholder";
   return placeholder;
 }
 
-/* =========================
-   バリアント表示用の1行生成
-========================= */
-function createVariantViewRow(
-  labelText,
-  typeOrder,
-  itemsByType,
-  showBulkCheckbox = true
-) {
-  const row =
-    document.createElement(
-      "div"
-    );
-
-  const header =
-    document.createElement(
-      "div"
-    );
-
-  const label =
-    document.createElement(
-      "div"
-    );
-
-  const itemArea =
-    document.createElement(
-      "div"
-    );
-
-  row.className =
-    "variant-view-row";
-
-  header.className =
-    "variant-view-header";
-
-  label.className =
-    "variant-view-label";
-
-  label.textContent =
-    labelText;
-
+function createVariantViewRow(labelText, typeOrder, itemsByType, showBulkCheckbox = true) {
+  const row = document.createElement("div");
+  const header = document.createElement("div");
+  const label = document.createElement("div");
+  const itemArea = document.createElement("div");
+  
+  row.className = "variant-view-row";
+  header.className = "variant-view-header";
+  label.className = "variant-view-label";
+  label.textContent = labelText;
   header.appendChild(label);
-
-  itemArea.className =
-    "variant-view-items";
-
-  if (!showBulkCheckbox) {
-    itemArea.classList.add(
-      "no-bulk-checkbox"
-    );
-  }
-
-  itemArea.style.setProperty(
-    "--variant-view-column-count",
-    Math.max(
-      1,
-      typeOrder.length
-    )
-  );
-
-  /*
-    すべてのバリアント行を同じtype順で走査する。
-    該当バリアントの画像がないtypeには空マスを置く。
-  */
+  
+  itemArea.className = "variant-view-items";
+  if (!showBulkCheckbox) itemArea.classList.add("no-bulk-checkbox");
+  itemArea.style.setProperty("--variant-view-column-count", Math.max(1, typeOrder.length));
+  
   for (const type of typeOrder) {
-    const item =
-      itemsByType.get(type);
-
+    const item = itemsByType.get(type);
     if (item) {
-      itemArea.appendChild(
-        createCollectionItem(
-          item.type,
-          item.variant
-        )
-      );
+      itemArea.appendChild(createCollectionItem(item.type, item.variant));
     } else {
-      itemArea.appendChild(
-        createVariantViewPlaceholder()
-      );
+      itemArea.appendChild(createVariantViewPlaceholder());
     }
   }
-
-  /*
-    最後のtype列のさらに右へ、
-    このバリアント専用の一括チェック欄を置く。
-  */
+  
   if (showBulkCheckbox) {
-    const bulkCell =
-      document.createElement(
-        "div"
-      );
-
-    const bulkCheckbox =
-      document.createElement(
-        "input"
-      );
-
-    bulkCell.className =
-      "variant-view-bulk-cell";
-
-    bulkCheckbox.type =
-      "checkbox";
-
-    bulkCheckbox.className =
-      "variant-view-bulk-checkbox";
-
-    bulkCheckbox.dataset.variant =
-      labelText;
-
-    bulkCheckbox.setAttribute(
-      "aria-label",
-      `${labelText}をすべてチェック`
-    );
-
-    bulkCheckbox.addEventListener(
-      "change",
-      event => {
-        event.stopPropagation();
-
-        const nextChecked =
-          bulkCheckbox.checked;
-
-        const items =
-          getRenderedVariantItems(
-            labelText
-          );
-
-        for (const item of items) {
-          item.classList.toggle(
-            "checked",
-            nextChecked
-          );
-
-          localStorage.setItem(
-            item.dataset.storageKey,
-            String(nextChecked)
-          );
-        }
-
-        updateCounter();
-        updateVariantBulkCheckboxes();
+    const bulkCell = document.createElement("div");
+    const bulkCheckbox = document.createElement("input");
+    bulkCell.className = "variant-view-bulk-cell";
+    bulkCheckbox.type = "checkbox";
+    bulkCheckbox.className = "variant-view-bulk-checkbox";
+    bulkCheckbox.dataset.variant = labelText;
+    bulkCheckbox.setAttribute("aria-label", `${labelText}をすべてチェック`);
+    
+    bulkCheckbox.addEventListener("change", event => {
+      event.stopPropagation();
+      const nextChecked = bulkCheckbox.checked;
+      const items = getRenderedVariantItems(labelText);
+      for (const item of items) {
+        item.classList.toggle("checked", nextChecked);
+        localStorage.setItem(item.dataset.storageKey, String(nextChecked));
       }
-    );
-
-    bulkCell.appendChild(
-      bulkCheckbox
-    );
-
-    itemArea.appendChild(
-      bulkCell
-    );
+      updateCounter();
+      updateVariantBulkCheckboxes();
+    });
+    
+    bulkCell.appendChild(bulkCheckbox);
+    itemArea.appendChild(bulkCell);
   }
-
-  row.append(
-    header,
-    itemArea
-  );
-
+  
+  row.append(header, itemArea);
   return row;
 }
 
-/* =========================
-   表示中の指定バリアント画像取得
-========================= */
-function getRenderedVariantItems(
-  variant
-) {
-  return [
-    ...gallery.querySelectorAll(
-      ".item[data-variant]"
-    )
-  ].filter(
-    item => {
-      return item.dataset.variant
-        === variant;
-    }
+function getRenderedVariantItems(variant) {
+  return [...gallery.querySelectorAll(".item[data-variant]")].filter(
+    item => item.dataset.variant === variant
   );
 }
 
-/* =========================
-   バリアント一括チェック欄の状態更新
-========================= */
 function updateVariantBulkCheckboxes() {
-  const checkboxes = [
-    ...gallery.querySelectorAll(
-      ".variant-view-bulk-checkbox"
-    )
-  ];
-
+  const checkboxes = [...gallery.querySelectorAll(".variant-view-bulk-checkbox")];
   for (const checkbox of checkboxes) {
-    const variant =
-      checkbox.dataset.variant;
-
-    if (!variant) {
-      continue;
-    }
-
-    const items =
-      getRenderedVariantItems(
-        variant
-      );
-
-    const checkedCount =
-      items.filter(
-        item => {
-          return item.classList.contains(
-            "checked"
-          );
-        }
-      ).length;
-
-    checkbox.checked =
-      items.length > 0
-      && checkedCount === items.length;
-
-    checkbox.indeterminate =
-      checkedCount > 0
-      && checkedCount < items.length;
-
-    checkbox.title = checkbox.checked
-      ? `${variant}をすべて解除`
-      : `${variant}をすべてチェック`;
+    const variant = checkbox.dataset.variant;
+    if (!variant) continue;
+    const items = getRenderedVariantItems(variant);
+    const checkedCount = items.filter(item => item.classList.contains("checked")).length;
+    checkbox.checked = items.length > 0 && checkedCount === items.length;
+    checkbox.indeterminate = checkedCount > 0 && checkedCount < items.length;
+    checkbox.title = checkbox.checked ? `${variant}をすべて解除` : `${variant}をすべてチェック`;
   }
 }
 
-/* =========================
-   スマホ版バリアント行列
-
-   行：type
-   列：variant
-========================= */
-function createMobileVariantBulkCheckbox(
-  variant
-) {
-  const checkbox =
-    document.createElement(
-      "input"
-    );
-
-  checkbox.type =
-    "checkbox";
-
-  checkbox.className =
-    "variant-view-bulk-checkbox";
-
-  checkbox.dataset.variant =
-    variant;
-
-  checkbox.setAttribute(
-    "aria-label",
-    `${variant}をすべてチェック`
-  );
-
-  checkbox.addEventListener(
-    "change",
-    event => {
-      event.stopPropagation();
-
-      const nextChecked =
-        checkbox.checked;
-
-      const items =
-        getRenderedVariantItems(
-          variant
-        );
-
-      for (const item of items) {
-        item.classList.toggle(
-          "checked",
-          nextChecked
-        );
-
-        localStorage.setItem(
-          item.dataset.storageKey,
-          String(nextChecked)
-        );
-      }
-
-      updateCounter();
-      updateVariantBulkCheckboxes();
+function createMobileVariantBulkCheckbox(variant) {
+  const checkbox = document.createElement("input");
+  checkbox.type = "checkbox";
+  checkbox.className = "variant-view-bulk-checkbox";
+  checkbox.dataset.variant = variant;
+  checkbox.setAttribute("aria-label", `${variant}をすべてチェック`);
+  checkbox.addEventListener("change", event => {
+    event.stopPropagation();
+    const nextChecked = checkbox.checked;
+    const items = getRenderedVariantItems(variant);
+    for (const item of items) {
+      item.classList.toggle("checked", nextChecked);
+      localStorage.setItem(item.dataset.storageKey, String(nextChecked));
     }
-  );
-
+    updateCounter();
+    updateVariantBulkCheckboxes();
+  });
   return checkbox;
 }
 
 /* =========================
-   スマホ版バリアント配置
-
-   SPECIAL：横1列
-
-   上段：
-   normal gold gummy galaxy
-   normal gold gummy galaxy
-
-   下段：
-   holofoil・cube・gem・quackを
-   バリアントごとに横1列で表示する。
+   スマホ版バリアント配置 (現在ページのみ)
 ========================= */
 function renderMobileVariantView() {
-  const typeOrder =
-    getVariantViewTypeOrder();
-
-  const variantsByType =
-    new Map();
-
-  for (
-    const {
-      types
-    }
-    of COLLECTION_ROWS
-  ) {
+  const typeOrder = getVariantViewTypeOrder();
+  const variantsByType = new Map();
+  for (const { types } of getCurrentCollection()) {
     for (const typeData of types) {
-      variantsByType.set(
-        typeData.type,
-        new Set(
-          getVariants(typeData)
-        )
-      );
+      variantsByType.set(typeData.type, new Set(getVariants(typeData)));
     }
   }
-
-  const layout =
-    document.createElement(
-      "div"
-    );
-
-  layout.className =
-    "mobile-variant-layout";
-
-  /*
-    SPECIALは最上部へ横一列で配置する。
-  */
-  if (STANDALONE_ITEMS.length > 0) {
-    const special =
-      document.createElement(
-        "div"
-      );
-
-    const specialItems =
-      document.createElement(
-        "div"
-      );
-
-    special.className =
-      "mobile-variant-special";
-
-    specialItems.className =
-      "mobile-variant-special-items";
-
-    for (
-      const {
-        type
-      }
-      of STANDALONE_ITEMS
-    ) {
-      specialItems.appendChild(
-        createCollectionItem(
-          type,
-          null
-        )
-      );
+  
+  const layout = document.createElement("div");
+  layout.className = "mobile-variant-layout";
+  
+  const standalones = getCurrentStandalone();
+  if (standalones.length > 0) {
+    const special = document.createElement("div");
+    const specialItems = document.createElement("div");
+    special.className = "mobile-variant-special";
+    specialItems.className = "mobile-variant-special-items";
+    for (const { type } of standalones) {
+      specialItems.appendChild(createCollectionItem(type, null));
     }
-
-    special.appendChild(
-      specialItems
-    );
-
-    layout.appendChild(
-      special
-    );
+    special.appendChild(specialItems);
+    layout.appendChild(special);
   }
-
-  /*
-    1種類のバリアントだけを入れた段を生成する。
-
-    columnLimitを超えた場合は途中で改行するが、
-    別のバリアントが同じ行へ混ざることはない。
-  */
-  function createCompactVariantGroup(
-    variant,
-    matchingTypes,
-    columnLimit,
-    primary = false
-  ) {
-    const group =
-      document.createElement(
-        "div"
-      );
-
-    const header =
-      document.createElement(
-        "div"
-      );
-
-    const label =
-      document.createElement(
-        "div"
-      );
-
-    const control =
-      document.createElement(
-        "div"
-      );
-
-    const body =
-      document.createElement(
-        "div"
-      );
-
-    const items =
-      document.createElement(
-        "div"
-      );
-
-    group.className =
-      "mobile-compact-variant-group";
-
-    header.className =
-      "mobile-compact-variant-header";
-
-    label.className =
-      "mobile-compact-variant-label";
-
-    label.textContent =
-      variant;
-
-    control.className =
-      "mobile-compact-variant-control";
-
-    body.className =
-      "mobile-compact-variant-body";
-
-    items.className =
-      "mobile-compact-variant-items";
-
+  
+  function createCompactVariantGroup(variant, matchingTypes, columnLimit, primary = false) {
+    const group = document.createElement("div");
+    const header = document.createElement("div");
+    const label = document.createElement("div");
+    const control = document.createElement("div");
+    const body = document.createElement("div");
+    const items = document.createElement("div");
+    
+    group.className = "mobile-compact-variant-group";
+    header.className = "mobile-compact-variant-header";
+    label.className = "mobile-compact-variant-label";
+    label.textContent = variant;
+    control.className = "mobile-compact-variant-control";
+    body.className = "mobile-compact-variant-body";
+    items.className = "mobile-compact-variant-items";
+    
     if (primary) {
-      items.classList.add(
-        "mobile-primary-variant-items"
-      );
-
-      /*
-        スマホ版では画像が10枚未満でも10列ぶんの幅を確保する。
-        これにより右側の一括チェック欄のx座標を全バリアントで統一する。
-      */
-      items.style.setProperty(
-        "--mobile-primary-column-count",
-        columnLimit
-      );
+      items.classList.add("mobile-primary-variant-items");
+      items.style.setProperty("--mobile-primary-column-count", columnLimit);
     } else {
-      /*
-        cube・gem・quackなど画像数が10枚未満でも、
-        常に10列ぶんのグリッド幅を確保する。
-        空いている列は何も表示せず、その右側にチェック欄を揃える。
-      */
-      items.style.setProperty(
-        "--mobile-secondary-column-count",
-        columnLimit
-      );
+      items.style.setProperty("--mobile-secondary-column-count", columnLimit);
     }
-
-    const bulkCheckbox =
-      createMobileVariantBulkCheckbox(
-        variant
-      );
-
-    control.appendChild(
-      bulkCheckbox
-    );
-
-    /*
-      チェックボックスそのものだけでなく、
-      右側の専用領域全体をタップ可能にする。
-
-      この領域は画像グリッドとは完全に別なので、
-      画像側のクリック判定とは重ならない。
-    */
-    control.addEventListener(
-      "click",
-      event => {
-        if (event.target === bulkCheckbox) {
-          return;
-        }
-
-        bulkCheckbox.checked =
-          !bulkCheckbox.checked;
-
-        bulkCheckbox.dispatchEvent(
-          new Event(
-            "change",
-            {
-              bubbles: true
-            }
-          )
-        );
-      }
-    );
-
-    header.appendChild(
-      label
-    );
-
+    
+    const bulkCheckbox = createMobileVariantBulkCheckbox(variant);
+    control.appendChild(bulkCheckbox);
+    control.addEventListener("click", event => {
+      if (event.target === bulkCheckbox) return;
+      bulkCheckbox.checked = !bulkCheckbox.checked;
+      bulkCheckbox.dispatchEvent(new Event("change", { bubbles: true }));
+    });
+    
+    header.appendChild(label);
     for (const type of matchingTypes) {
-      items.appendChild(
-        createCollectionItem(
-          type,
-          variant
-        )
-      );
+      items.appendChild(createCollectionItem(type, variant));
     }
-
-    body.append(
-      items,
-      control
-    );
-
-    group.append(
-      header,
-      body
-    );
-
+    body.append(items, control);
+    group.append(header, body);
     return group;
   }
-
-  /*
-    上側：normal・gold・gummy・galaxy。
-
-    各バリアントを完全に別の段へ分け、
-    最大10枚ごとに同じバリアント内で改行する。
-  */
-  const primaryArea =
-    document.createElement(
-      "div"
-    );
-
-  primaryArea.className =
-    "mobile-primary-variants";
-
-  for (
-    const variant
-    of MOBILE_PRIMARY_VARIANTS
-  ) {
-    const matchingTypes =
-      typeOrder.filter(
-        type => {
-          return variantsByType
-            .get(type)
-            ?.has(variant);
-        }
-      );
-
-    if (matchingTypes.length === 0) {
-      continue;
-    }
-
-    primaryArea.appendChild(
-      createCompactVariantGroup(
-        variant,
-        matchingTypes,
-        10,
-        true
-      )
-    );
+  
+  const primaryArea = document.createElement("div");
+  primaryArea.className = "mobile-primary-variants";
+  for (const variant of MOBILE_PRIMARY_VARIANTS) {
+    const matchingTypes = typeOrder.filter(type => variantsByType.get(type)?.has(variant));
+    if (matchingTypes.length === 0) continue;
+    primaryArea.appendChild(createCompactVariantGroup(variant, matchingTypes, 10, true));
   }
-
-  layout.appendChild(
-    primaryArea
-  );
-
-  /*
-    下側：holofoil・cube・gem・quack。
-    各バリアントを独立させ、スマホでは最大10列で折り返す。
-    11枚あるholofoilが横幅を広げないため、画像を大きくできる。
-  */
-  const secondaryArea =
-    document.createElement(
-      "div"
-    );
-
-  secondaryArea.className =
-    "mobile-secondary-variants";
-
-  for (
-    const variant
-    of MOBILE_SECONDARY_VARIANTS
-  ) {
-    const matchingTypes =
-      typeOrder.filter(
-        type => {
-          return variantsByType
-            .get(type)
-            ?.has(variant);
-        }
-      );
-
-    if (matchingTypes.length === 0) {
-      continue;
-    }
-
-    secondaryArea.appendChild(
-      createCompactVariantGroup(
-        variant,
-        matchingTypes,
-        10,
-        false
-      )
-    );
+  layout.appendChild(primaryArea);
+  
+  const secondaryArea = document.createElement("div");
+  secondaryArea.className = "mobile-secondary-variants";
+  for (const variant of MOBILE_SECONDARY_VARIANTS) {
+    const matchingTypes = typeOrder.filter(type => variantsByType.get(type)?.has(variant));
+    if (matchingTypes.length === 0) continue;
+    secondaryArea.appendChild(createCompactVariantGroup(variant, matchingTypes, 10, false));
   }
-
-  layout.appendChild(
-    secondaryArea
-  );
-
-  gallery.appendChild(
-    layout
-  );
+  layout.appendChild(secondaryArea);
+  
+  gallery.appendChild(layout);
 }
 
 /* =========================
-   全バリアント表示
+   PC版バリアント表示 (現在ページのみ)
 ========================= */
 function renderVariantView() {
   if (isMobileView()) {
     renderMobileVariantView();
-
     return;
   }
-
-  const typeOrder =
-    getVariantViewTypeOrder();
-
-  for (
-    const {
-      variant,
-      itemsByType
-    }
-    of getAllVariantGroups()
-  ) {
-    gallery.appendChild(
-      createVariantViewRow(
-        variant,
-        typeOrder,
-        itemsByType
-      )
-    );
+  
+  const typeOrder = getVariantViewTypeOrder();
+  for (const { variant, itemsByType } of getAllVariantGroups()) {
+    gallery.appendChild(createVariantViewRow(variant, typeOrder, itemsByType));
   }
-
-  /*
-    peanutなどはバリアントを持たず、
-    他のバリアント行と共通するtype列もない。
-    special行だけは空マスなしで横に並べる。
-  */
-  if (STANDALONE_ITEMS.length > 0) {
-    const standaloneTypeOrder =
-      STANDALONE_ITEMS.map(
-        ({ type }) => type
-      );
-
-    const standaloneMap =
-      new Map(
-        STANDALONE_ITEMS.map(
-          ({ type }) => {
-            return [
-              type,
-              {
-                type,
-                variant: null
-              }
-            ];
-          }
-        )
-      );
-
-    gallery.appendChild(
-      createVariantViewRow(
-        "special",
-        standaloneTypeOrder,
-        standaloneMap,
-        false
-      )
-    );
+  
+  const standalones = getCurrentStandalone();
+  if (standalones.length > 0) {
+    const standaloneTypeOrder = standalones.map(({ type }) => type);
+    const standaloneMap = new Map(standalones.map(({ type }) => [type, { type, variant: null }]));
+    gallery.appendChild(createVariantViewRow("special", standaloneTypeOrder, standaloneMap, false));
   }
 }
 
 /* =========================
-   全アイテムキー取得
+   ページネーション描画
+========================= */
+function renderPagination() {
+  paginationArea.replaceChildren();
+  PAGES.forEach((page, index) => {
+    const btn = document.createElement("button");
+    btn.className = "page-btn";
+    if (index === currentPageIndex) {
+      btn.classList.add("active");
+    }
+    btn.textContent = page.label;
+    btn.addEventListener("click", () => {
+      if (currentPageIndex !== index) {
+        currentPageIndex = index;
+        renderPagination();
+        renderView();
+      }
+    });
+    paginationArea.appendChild(btn);
+  });
+}
+
+/* =========================
+   全アイテムキー取得 (全ページ合計)
 ========================= */
 function getAllCollectionKeys() {
   const keys = new Set();
-
-  for (
-    const {
-      types
-    }
-    of COLLECTION_ROWS
-  ) {
-    for (const typeData of types) {
-      for (
-        const variant
-        of getVariants(typeData)
-      ) {
-        keys.add(
-          getStorageKey(
-            typeData.type,
-            variant
-          )
-        );
-      }
-    }
-  }
-
-  for (
-    const {
-      type
-    }
-    of STANDALONE_ITEMS
-  ) {
-    keys.add(
-      getStorageKey(
-        type,
-        null
-      )
-    );
-  }
-
-  return [
-    ...keys
-  ];
+  PAGES.forEach(page => {
+    page.collection.forEach(row => {
+      row.types.forEach(typeData => {
+        getVariants(typeData).forEach(variant => {
+          keys.add(getStorageKey(typeData.type, variant));
+        });
+      });
+    });
+    page.standalone.forEach(item => {
+      keys.add(getStorageKey(item.type, null));
+    });
+  });
+  return [...keys];
 }
 
 /* =========================
-   カウンター更新
+   カウンター更新 (全ページ合計)
 ========================= */
 function updateCounter() {
-  const keys =
-    getAllCollectionKeys();
-
-  const checkedCount =
-    keys.reduce(
-      (
-        count,
-        key
-      ) => {
-        return (
-          count
-          + (
-            localStorage.getItem(key)
-            === "true"
-              ? 1
-              : 0
-          )
-        );
-      },
-      0
-    );
-
-  document
-    .getElementById(
-      "current-count"
-    )
-    .textContent =
-      checkedCount;
-
-  document
-    .getElementById(
-      "total-count"
-    )
-    .textContent =
-      keys.length;
+  const keys = getAllCollectionKeys();
+  const checkedCount = keys.reduce((count, key) => {
+    return count + (localStorage.getItem(key) === "true" ? 1 : 0);
+  }, 0);
+  document.getElementById("current-count").textContent = checkedCount;
+  document.getElementById("total-count").textContent = keys.length;
 }
 
 /* =========================
-   バリアント表示を描画
+   表示全体の描画
 ========================= */
 function renderView() {
   gallery.replaceChildren();
-
-  document.body.classList.add(
-    "is-variant-view"
-  );
-
+  document.body.classList.add("is-variant-view");
   renderVariantView();
-
   updateCounter();
   updateVariantBulkCheckboxes();
   scheduleAutoLayout();
 }
 
 /* =========================
-   使用可能サイズ取得
+   使用可能サイズ取得と調整処理
 ========================= */
 function getAvailableSize() {
-  const style =
-    getComputedStyle(capture);
-
-  const paddingX =
-    parseFloat(
-      style.paddingLeft
-    )
-    + parseFloat(
-      style.paddingRight
-    );
-
-  const paddingY =
-    parseFloat(
-      style.paddingTop
-    )
-    + parseFloat(
-      style.paddingBottom
-    );
-
+  const style = getComputedStyle(capture);
+  const paddingX = parseFloat(style.paddingLeft) + parseFloat(style.paddingRight);
+  const paddingY = parseFloat(style.paddingTop) + parseFloat(style.paddingBottom);
   return {
-    width:
-      capture.clientWidth
-      - paddingX
-      - AUTO_FIT.safetyMargin,
-
-    height:
-      capture.clientHeight
-      - paddingY
-      - AUTO_FIT.safetyMargin
+    width: capture.clientWidth - paddingX - AUTO_FIT.safetyMargin,
+    height: capture.clientHeight - paddingY - AUTO_FIT.safetyMargin
   };
 }
 
 function contentFits() {
-  const available =
-    getAvailableSize();
-
-  const rect =
-    collectionContent
-      .getBoundingClientRect();
-
-  return (
-    rect.width <= available.width
-    && rect.height <= available.height
-  );
+  const available = getAvailableSize();
+  const rect = collectionContent.getBoundingClientRect();
+  return (rect.width <= available.width && rect.height <= available.height);
 }
 
-/* =========================
-   最大画像サイズ探索
-========================= */
 function findLargestItemSize() {
-  let low =
-    AUTO_FIT.minItemSize;
-
-  let high =
-    AUTO_FIT.maxItemSize;
-
-  /*
-    二分探索で画面に収まる最大サイズを求める。
-  */
+  let low = AUTO_FIT.minItemSize;
+  let high = AUTO_FIT.maxItemSize;
   for (let i = 0; i < 14; i++) {
-    const middle =
-      (low + high) / 2;
-
-    root.style.setProperty(
-      "--item-size",
-      `${middle}px`
-    );
-
+    const middle = (low + high) / 2;
+    root.style.setProperty("--item-size", `${middle}px`);
     if (contentFits()) {
       low = middle;
     } else {
       high = middle;
     }
   }
-
-  return Math.max(
-    AUTO_FIT.minItemSize,
-    Math.floor(
-      low * 10
-    ) / 10
-  );
+  return Math.max(AUTO_FIT.minItemSize, Math.floor(low * 10) / 10);
 }
 
 function contentFitsWidthOnly() {
-  const available =
-    getAvailableSize();
-
-  const widthTargets = [
-    ...gallery.children
-  ];
-
-  const contentWidth =
-    widthTargets.reduce(
-      (
-        maxWidth,
-        element
-      ) => {
-        return Math.max(
-          maxWidth,
-          element
-            .getBoundingClientRect()
-            .width
-        );
-      },
-      0
-    );
-
+  const available = getAvailableSize();
+  const widthTargets = [...gallery.children];
+  const contentWidth = widthTargets.reduce((maxWidth, element) => {
+    return Math.max(maxWidth, element.getBoundingClientRect().width);
+  }, 0);
   return contentWidth <= available.width;
 }
 
 function findLargestItemSizeWidthOnly() {
-  let low =
-    AUTO_FIT.minItemSize;
-
-  let high =
-    AUTO_FIT.maxItemSize;
-
+  let low = AUTO_FIT.minItemSize;
+  let high = AUTO_FIT.maxItemSize;
   for (let i = 0; i < 14; i++) {
-    const middle =
-      (low + high) / 2;
-
-    root.style.setProperty(
-      "--item-size",
-      `${middle}px`
-    );
-
+    const middle = (low + high) / 2;
+    root.style.setProperty("--item-size", `${middle}px`);
     if (contentFitsWidthOnly()) {
       low = middle;
     } else {
       high = middle;
     }
   }
-
-  return Math.max(
-    AUTO_FIT.minItemSize,
-    Math.floor(
-      low * 10
-    ) / 10
-  );
+  return Math.max(AUTO_FIT.minItemSize, Math.floor(low * 10) / 10);
 }
 
 function applyAutoLayout() {
-  /*
-    PC・スマホとも、横幅と高さの両方を測定する。
-    スマホ専用配置は画面内へ収まる最大画像サイズになる。
-  */
-  root.style.setProperty(
-    "--item-size",
-    `${findLargestItemSize()}px`
-  );
+  root.style.setProperty("--item-size", `${findLargestItemSize()}px`);
 }
 
 function scheduleAutoLayout() {
   if (layoutFrameId !== null) {
-    cancelAnimationFrame(
-      layoutFrameId
-    );
+    cancelAnimationFrame(layoutFrameId);
   }
-
-  layoutFrameId =
-    requestAnimationFrame(
-      () => {
-        layoutFrameId = null;
-
-        applyAutoLayout();
-      }
-    );
+  layoutFrameId = requestAnimationFrame(() => {
+    layoutFrameId = null;
+    applyAutoLayout();
+  });
 }
 
 /* =========================
-   消費ダスト表示
+   消費ダスト表示・PNG保存処理
 ========================= */
 function toggleValues() {
-  const showing =
-    document.body.classList.toggle(
-      "show-values"
-    );
-
-  valueButton.textContent =
-    showing
-      ? "ダスト非表示"
-      : "ダスト表示";
-
-  /*
-    ボタン文字の長さで横幅が変わるため、
-    右側の予約幅も再測定する。
-  */
+  const showing = document.body.classList.toggle("show-values");
+  valueButton.textContent = showing ? "ダスト非表示" : "ダスト表示";
   scheduleAutoLayout();
 }
 
-/* =========================
-   画像読み込み待機
-========================= */
-async function waitForImages(
-  target
-) {
-  const images = [
-    ...target.querySelectorAll(
-      ".collection-image"
-    )
-  ];
-
-  await Promise.all(
-    images.map(
-      async image => {
-        if (!image.complete) {
-          await new Promise(
-            resolve => {
-              image.addEventListener(
-                "load",
-                resolve,
-                {
-                  once: true
-                }
-              );
-
-              image.addEventListener(
-                "error",
-                resolve,
-                {
-                  once: true
-                }
-              );
-            }
-          );
-        }
-
-        if (
-          image.naturalWidth > 0
-          && image.decode
-        ) {
-          try {
-            await image.decode();
-          } catch {
-            /*
-              読み込み済みなら保存処理を続行する。
-            */
-          }
-        }
-      }
-    )
-  );
+async function waitForImages(target) {
+  const images = [...target.querySelectorAll(".collection-image")];
+  await Promise.all(images.map(async image => {
+    if (!image.complete) {
+      await new Promise(resolve => {
+        image.addEventListener("load", resolve, { once: true });
+        image.addEventListener("error", resolve, { once: true });
+      });
+    }
+    if (image.naturalWidth > 0 && image.decode) {
+      try { await image.decode(); } catch {}
+    }
+  }));
 }
 
-/* =========================
-   保存時の右側余白切り抜き
-========================= */
-function cropControlSpace(
-  sourceCanvas
-) {
-  const captureStyle =
-    getComputedStyle(capture);
-
-  const leftPadding =
-    parseFloat(
-      captureStyle.paddingLeft
-    ) || 0;
-
-  const rightPadding =
-    parseFloat(
-      captureStyle.paddingRight
-    ) || 0;
-
-  /*
-    PC版で右側に追加したボタン用余白だけを除外する。
-    スマホ版は左右paddingが同じなので切り抜かれない。
-  */
-  const extraRightSpace =
-    Math.max(
-      0,
-      rightPadding - leftPadding
-    );
-
-  if (extraRightSpace === 0) {
-    return sourceCanvas;
-  }
-
-  const canvasScale =
-    sourceCanvas.width
-    / capture.clientWidth;
-
-  const croppedWidth =
-    Math.max(
-      1,
-      Math.round(
-        sourceCanvas.width
-        - extraRightSpace
-        * canvasScale
-      )
-    );
-
-  const croppedCanvas =
-    document.createElement(
-      "canvas"
-    );
-
-  croppedCanvas.width =
-    croppedWidth;
-
-  croppedCanvas.height =
-    sourceCanvas.height;
-
-  const ctx =
-    croppedCanvas.getContext(
-      "2d"
-    );
-
-  if (!ctx) {
-    return sourceCanvas;
-  }
-
+function cropControlSpace(sourceCanvas) {
+  const captureStyle = getComputedStyle(capture);
+  const leftPadding = parseFloat(captureStyle.paddingLeft) || 0;
+  const rightPadding = parseFloat(captureStyle.paddingRight) || 0;
+  const extraRightSpace = Math.max(0, rightPadding - leftPadding);
+  
+  if (extraRightSpace === 0) return sourceCanvas;
+  
+  const canvasScale = sourceCanvas.width / capture.clientWidth;
+  const croppedWidth = Math.max(1, Math.round(sourceCanvas.width - extraRightSpace * canvasScale));
+  
+  const croppedCanvas = document.createElement("canvas");
+  croppedCanvas.width = croppedWidth;
+  croppedCanvas.height = sourceCanvas.height;
+  
+  const ctx = croppedCanvas.getContext("2d");
+  if (!ctx) return sourceCanvas;
+  
   ctx.drawImage(
     sourceCanvas,
-
-    0,
-    0,
-    croppedWidth,
-    sourceCanvas.height,
-
-    0,
-    0,
-    croppedWidth,
-    sourceCanvas.height
+    0, 0, croppedWidth, sourceCanvas.height,
+    0, 0, croppedWidth, sourceCanvas.height
   );
-
   return croppedCanvas;
 }
 
-/* =========================
-   スマホ保存補助
-========================= */
 function isIOSLikeDevice() {
-  return (
-    /iPad|iPhone|iPod/.test(
-      navigator.userAgent
-    )
-    || (
-      navigator.platform === "MacIntel"
-      && navigator.maxTouchPoints > 1
-    )
-  );
+  return /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
 }
 
-function canvasToPNGBlob(
-  canvas
-) {
-  return new Promise(
-    (
-      resolve,
-      reject
-    ) => {
-      canvas.toBlob(
-        blob => {
-          if (blob) {
-            resolve(blob);
-
-            return;
-          }
-
-          reject(
-            new Error(
-              "PNG画像を作成できませんでした。"
-            )
-          );
-        },
-        "image/png"
-      );
-    }
-  );
+function canvasToPNGBlob(canvas) {
+  return new Promise((resolve, reject) => {
+    canvas.toBlob(blob => {
+      if (blob) {
+        resolve(blob);
+      } else {
+        reject(new Error("PNG画像を作成できませんでした。"));
+      }
+    }, "image/png");
+  });
 }
 
-function downloadPNGBlob(
-  blob,
-  fileName
-) {
-  const objectURL =
-    URL.createObjectURL(blob);
-
-  const link =
-    document.createElement(
-      "a"
-    );
-
+function downloadPNGBlob(blob, fileName) {
+  const objectURL = URL.createObjectURL(blob);
+  const link = document.createElement("a");
   link.href = objectURL;
   link.download = fileName;
   link.rel = "noopener";
-
-  /*
-    スマホブラウザではDOMへ追加していないa要素の
-    click()が無視されることがあるため、一度bodyへ置く。
-  */
   document.body.appendChild(link);
   link.click();
   link.remove();
-
-  /*
-    click直後にURLを破棄すると、端末によっては
-    ダウンロード開始前に画像を読めなくなるため少し待つ。
-  */
-  window.setTimeout(
-    () => {
-      URL.revokeObjectURL(
-        objectURL
-      );
-    },
-    60000
-  );
+  window.setTimeout(() => { URL.revokeObjectURL(objectURL); }, 60000);
 }
 
-function showIOSSavePreview(
-  blob,
-  previewWindow
-) {
-  const objectURL =
-    URL.createObjectURL(blob);
-
-  /*
-    iPhone・iPadではdownload属性が無視される場合がある。
-    ボタンを押した瞬間に開いておいたタブへ完成画像を表示し、
-    長押しまたは共有メニューから保存できるようにする。
-  */
-  if (
-    previewWindow
-    && !previewWindow.closed
-  ) {
+function showIOSSavePreview(blob, previewWindow) {
+  const objectURL = URL.createObjectURL(blob);
+  if (previewWindow && !previewWindow.closed) {
     previewWindow.document.open();
     previewWindow.document.write(
       `<!DOCTYPE html>
@@ -2845,32 +1473,10 @@ function showIOSSavePreview(
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>コレクション画像</title>
 <style>
-html, body {
-  margin: 0;
-  min-height: 100%;
-  background: #111111;
-  color: #ffffff;
-  font-family: sans-serif;
-}
-body {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-  padding: 12px;
-}
-p {
-  margin: 0;
-  font-size: 14px;
-  text-align: center;
-}
-img {
-  display: block;
-  width: 100%;
-  height: auto;
-  object-fit: contain;
-  -webkit-touch-callout: default;
-}
+html, body { margin: 0; min-height: 100%; background: #111111; color: #ffffff; font-family: sans-serif; }
+body { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 12px; }
+p { margin: 0; font-size: 14px; text-align: center; }
+img { display: block; width: 100%; height: auto; object-fit: contain; -webkit-touch-callout: default; }
 </style>
 </head>
 <body>
@@ -2880,67 +1486,28 @@ img {
 </html>`
     );
     previewWindow.document.close();
-
-    const previewImage =
-      previewWindow.document
-        .getElementById(
-          "collection-save-image"
-        );
-
+    const previewImage = previewWindow.document.getElementById("collection-save-image");
     if (previewImage) {
       previewImage.src = objectURL;
     } else {
-      previewWindow.location.href =
-        objectURL;
+      previewWindow.location.href = objectURL;
     }
   } else {
-    /*
-      ポップアップが禁止されていた場合の最終手段。
-      同じタブへ画像を開くが、チェック状態はlocalStorageに残る。
-    */
     window.location.href = objectURL;
   }
-
-  window.setTimeout(
-    () => {
-      URL.revokeObjectURL(
-        objectURL
-      );
-    },
-    60000
-  );
+  window.setTimeout(() => { URL.revokeObjectURL(objectURL); }, 60000);
 }
 
-/* =========================
-   PNG保存
-========================= */
 let savingPNG = false;
 
 async function savePNG() {
-  if (savingPNG) {
-    return;
-  }
-
+  if (savingPNG) return;
   savingPNG = true;
-
-  const originalButtonText =
-    saveButton.textContent;
-
-  const useIOSPreview =
-    isIOSLikeDevice();
-
-  /*
-    iOSでは非同期処理完了後のwindow.openがブロックされる。
-    そのため、ユーザーがPNGボタンを押した直後に空タブを開く。
-  */
-  const previewWindow =
-    useIOSPreview
-      ? window.open(
-          "",
-          "_blank"
-        )
-      : null;
-
+  
+  const originalButtonText = saveButton.textContent;
+  const useIOSPreview = isIOSLikeDevice();
+  const previewWindow = useIOSPreview ? window.open("", "_blank") : null;
+  
   if (previewWindow) {
     previewWindow.document.open();
     previewWindow.document.write(
@@ -2951,15 +1518,7 @@ async function savePNG() {
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>画像作成中</title>
 <style>
-body {
-  margin: 0;
-  min-height: 100vh;
-  display: grid;
-  place-items: center;
-  background: #111111;
-  color: #ffffff;
-  font-family: sans-serif;
-}
+body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: #111111; color: #ffffff; font-family: sans-serif; }
 </style>
 </head>
 <body>画像を作成しています…</body>
@@ -2967,118 +1526,47 @@ body {
     );
     previewWindow.document.close();
   }
-
+  
   saveButton.disabled = true;
-  saveButton.textContent =
-    "作成中";
-
+  saveButton.textContent = "作成中";
+  
   try {
-    await waitForImages(
-      capture
-    );
-
+    await waitForImages(capture);
     let fullCanvas;
-
-    /*
-      TOTAL横の操作ボタンを保存画像へ入れない。
-      非表示にした状態でもう一度最大サイズを計算する。
-    */
-    document.body.classList.add(
-      "is-saving"
-    );
-
+    document.body.classList.add("is-saving");
+    
     try {
       applyAutoLayout();
-
-      await new Promise(
-        resolve => {
-          requestAnimationFrame(
-            () => {
-              requestAnimationFrame(
-                resolve
-              );
-            }
-          );
-        }
-      );
-
-      fullCanvas =
-        await html2canvas(
-          capture,
-          {
-            useCORS: true,
-            backgroundColor: null,
-
-            /*
-              高解像度端末でscale: 2固定にすると、
-              巨大Canvasになってスマホのメモリ上限を超えやすい。
-              端末倍率を上限2として使用する。
-            */
-            scale: Math.min(
-              2,
-              Math.max(
-                1,
-                window.devicePixelRatio
-                || 1
-              )
-            ),
-
-            logging: false
-          }
-        );
+      await new Promise(resolve => {
+        requestAnimationFrame(() => { requestAnimationFrame(resolve); });
+      });
+      fullCanvas = await html2canvas(capture, {
+        useCORS: true,
+        backgroundColor: null,
+        scale: Math.min(2, Math.max(1, window.devicePixelRatio || 1)),
+        logging: false
+      });
     } finally {
-      document.body.classList.remove(
-        "is-saving"
-      );
-
+      document.body.classList.remove("is-saving");
       scheduleAutoLayout();
     }
-
-    if (!fullCanvas) {
-      throw new Error(
-        "保存画像を作成できませんでした。"
-      );
-    }
-
-    const saveCanvas =
-      cropControlSpace(
-        fullCanvas
-      );
-
-    const pngBlob =
-      await canvasToPNGBlob(
-        saveCanvas
-      );
-
+    
+    if (!fullCanvas) throw new Error("保存画像を作成できませんでした。");
+    const saveCanvas = cropControlSpace(fullCanvas);
+    const pngBlob = await canvasToPNGBlob(saveCanvas);
+    
     if (useIOSPreview) {
-      showIOSSavePreview(
-        pngBlob,
-        previewWindow
-      );
+      showIOSSavePreview(pngBlob, previewWindow);
     } else {
-      downloadPNGBlob(
-        pngBlob,
-        "collection_variant_view.png"
-      );
+      downloadPNGBlob(pngBlob, `collection_page${currentPageIndex + 1}.png`);
     }
   } catch (error) {
     console.error(error);
-
-    if (
-      previewWindow
-      && !previewWindow.closed
-    ) {
-      previewWindow.close();
-    }
-
-    alert(
-      "画像を保存できませんでした。ページを再読み込みして、もう一度お試しください。"
-    );
+    if (previewWindow && !previewWindow.closed) previewWindow.close();
+    alert("画像を保存できませんでした。ページを再読み込みして、もう一度お試しください。");
   } finally {
     saveButton.disabled = false;
-    saveButton.textContent =
-      originalButtonText;
-
+    saveButton.textContent = originalButtonText;
     savingPNG = false;
   }
 }
@@ -3086,67 +1574,32 @@ body {
 /* =========================
    イベント
 ========================= */
-valueButton.addEventListener(
-  "click",
-  toggleValues
-);
+valueButton.addEventListener("click", toggleValues);
+saveButton.addEventListener("click", savePNG);
 
-saveButton.addEventListener(
-  "click",
-  savePNG
-);
-
-let lastMobileView =
-  isMobileView();
-
+let lastMobileView = isMobileView();
 function handleViewportChange() {
-  const mobileView =
-    isMobileView();
-
+  const mobileView = isMobileView();
   if (mobileView !== lastMobileView) {
     lastMobileView = mobileView;
     renderView();
-
     return;
   }
-
   scheduleAutoLayout();
 }
-
-window.addEventListener(
-  "resize",
-  handleViewportChange,
-  {
-    passive: true
-  }
-);
-
-window.addEventListener(
-  "orientationchange",
-  handleViewportChange,
-  {
-    passive: true
-  }
-);
-
-if (
-  "ResizeObserver" in window
-) {
-  const resizeObserver =
-    new ResizeObserver(
-      scheduleAutoLayout
-    );
-
-  resizeObserver.observe(
-    capture
-  );
+window.addEventListener("resize", handleViewportChange, { passive: true });
+window.addEventListener("orientationchange", handleViewportChange, { passive: true });
+if ("ResizeObserver" in window) {
+  const resizeObserver = new ResizeObserver(scheduleAutoLayout);
+  resizeObserver.observe(capture);
 }
 
 /* =========================
    初期表示
 ========================= */
+renderPagination();
 renderView();
 </script>
 
 </body>
-</html>	
+</html>
